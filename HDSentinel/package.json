@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "gtkx dev src/dev.tsx",
         "build": "gtkx build",
+        "script":"chmod +x build_appimage.sh && ./build_appimage.sh",
         "typecheck": "tsc --noEmit",
         "start": "node dist/bundle.js",
         "test": "vitest"

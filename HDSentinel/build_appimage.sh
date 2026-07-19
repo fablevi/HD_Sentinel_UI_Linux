@@ -1,5 +1,7 @@
 #!/bin/bash
 
+npm run build
+
 # Hibák esetén azonnal álljon le a szkript
 set -e
 
