@@ -1,29 +1,25 @@
-import * as Gtk from "@gtkx/ffi/gtk";
-import { GtkApplicationWindow, GtkBox, GtkButton, GtkLabel, quit } from "@gtkx/react";
-import { useState } from "react";
-// @ts-ignore
+import { useState, useEffect } from "react";
+import { AdwApplicationWindow, AdwHeaderBar, quit, AdwToolbarView, AdwStatusPage } from "@gtkx/react";// @ts-ignore
 import { exec, execFileSync } from "child_process";
 // @ts-ignore
 import path from "path";
 // @ts-ignore
 import { fileURLToPath } from "url";
+import { ToolbarStyle } from "@gtkx/ffi/adw";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 const proc = (globalThis as any).process;
 
-// --- ROOT MÓD KEZELÉSE ---
-// Ha az appot a root indította újra a speciális kapcsolóval, akkor csak lefut a HDSentinel és kilép
 if (proc?.argv?.includes("--run-hdsentinel")) {
     try {
         const appDir = proc.env.APPDIR;
-        const binaryPath = appDir 
-            ? path.join(appDir, "exec/HDSentinel") 
+        const binaryPath = appDir
+            ? path.join(appDir, "exec/HDSentinel")
             : path.resolve(dirname, "../exec/HDSentinel");
 
-        // Meghívjuk a HDSentinel-t és a kimenetét kiírjuk a stdout-ra
-        const output = execFileSync(binaryPath, { encoding: "utf-8" });
+        const output = execFileSync(binaryPath, ["-xml", "-dump"], { encoding: "utf-8" });
         proc.stdout.write(output);
         proc.exit(0);
     } catch (e: any) {
@@ -33,9 +29,9 @@ if (proc?.argv?.includes("--run-hdsentinel")) {
 }
 
 export const App = () => {
-    const [returnedString, setReturnedString] = useState<String>("No data");
+    const [returnedString, setReturnedString] = useState<String>("Betöltés...");
 
-    function callTerminalCommand() {
+    function _callTerminalCommand() {
         const currentAppImage = proc?.env?.APPIMAGE;
 
         let command: string;
@@ -46,12 +42,11 @@ export const App = () => {
         const envPass = `env LD_LIBRARY_PATH="${ldLibrary}" DISPLAY="${display}" XAUTHORITY="${xauth}" XDG_RUNTIME_DIR="${runtimeDir}"`;
 
         if (currentAppImage) {
-            // APPIMAGE KÖRNYEZET: Magát az AppImage fájlt hívjuk meg rootként a kapcsolóval!
             command = `pkexec ${envPass} "${currentAppImage}" --run-hdsentinel`;
         } else {
-            // DEV KÖRNYEZET (npm run dev): A sima helyi binárist hívjuk meg
             const binaryPath = path.resolve(dirname, "../exec/HDSentinel");
-            command = `pkexec ${envPass} "${binaryPath}"`;
+            // Dev környezetben is átadjuk a -xml -dump opciókat
+            command = `pkexec ${envPass} "${binaryPath}" -xml -dump`;
         }
 
         setReturnedString("Hitelesítés szükséges...");
@@ -70,33 +65,42 @@ export const App = () => {
                     return;
                 }
             }
-            
+
             console.log(`[GTKX Kimenet]: ${stdout}`);
             setReturnedString(stdout.trim() || "Sikeres futás (nincs kimenet)");
         });
     }
 
+    useEffect(() => {
+        //callTerminalCommand();
+    }, []);
+
     return (
-        <GtkApplicationWindow title="My App" defaultWidth={400} defaultHeight={300} onClose={quit}>
-            <GtkBox
-                orientation={Gtk.Orientation.VERTICAL}
-                spacing={20}
-                marginTop={40}
-                marginBottom={40}
-                marginStart={40}
-                marginEnd={40}
-                valign={Gtk.Align.CENTER}
-                halign={Gtk.Align.CENTER}
-            >
-                <GtkLabel label={`${returnedString}`} cssClasses={["title-2"]} />
-                <GtkButton
-                    label="Call"
-                    onClicked={() => callTerminalCommand()}
-                    cssClasses={["suggested-action", "pill"]}
-                />
-            </GtkBox>
-        </GtkApplicationWindow>
+        <AdwApplicationWindow
+            title="Tasks"
+            widthRequest={360}
+            heightRequest={294}
+            onClose={() => quit()}
+        >
+            <AdwHeaderBar></AdwHeaderBar>
+           
+
+        </AdwApplicationWindow>
     );
 };
 
 export default App;
+
+/*
+ <AdwToolbarView topBarStyle={1}>
+                <AdwStatusPage
+                    iconName="checkbox-checked-symbolic"
+                    title="No Tasks Yet"
+                    description="Your tasks will show up here."
+                /></AdwToolbarView>
+
+
+ <GtkApplicationWindow title="HD Sentinel UI" defaultWidth={500} defaultHeight={400} onClose={quit}>
+            
+        </GtkApplicationWindow>
+*/
