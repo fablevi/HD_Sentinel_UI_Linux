@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { AdwApplicationWindow, AdwHeaderBar, quit, AdwToolbarView, AdwStatusPage } from "@gtkx/react";
+import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage } from "@gtkx/jsx/adw";
+import { quit } from "@gtkx/react";
+
 // @ts-ignore
 import { exec as execCb, execFileSync } from "child_process";
 // @ts-ignore
@@ -33,10 +35,10 @@ if (proc?.argv?.includes("--run-hdsentinel")) {
 }
 
 export const App = () => {
-    const [returnedString, setReturnedString] = useState<string>("");
+    const [returnedString, setReturnedString] = useState<string>("Betöltés...");
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
 
-    async function _callTerminalCommand() {
+    async function callTerminalCommand() {
         const currentAppImage = proc?.env?.APPIMAGE;
 
         let command: string;
@@ -61,14 +63,13 @@ export const App = () => {
             throw new Error(stderr.trim());
         }
 
-        console.log(`[GTKX Kimenet]: ${stdout}`);
-        setReturnedString(stdout.trim() || "Sikeres futás (nincs kimenet)");
         return stdout;
     }
 
     useEffect(() => {
-        _callTerminalCommand()
-            .then(() => {
+       callTerminalCommand()
+            .then((stdout) => {
+                setReturnedString(stdout.trim() || "Sikeres futás (nincs kimenet)");
                 setOpenMainWindow("open");
             })
             .catch((err) => {
@@ -84,11 +85,8 @@ export const App = () => {
 
     if (openMainWindow === "open") {
         return (
-            <AdwApplicationWindow title="HD Sentinel" widthRequest={360} heightRequest={294} onClose={() => quit()}>
-                <AdwToolbarView>
-                    <AdwToolbarView.AddTopBar>
-                        <AdwHeaderBar />
-                    </AdwToolbarView.AddTopBar>
+            <AdwApplicationWindow title="HD Sentinel" widthRequest={360} heightRequest={294} onCloseRequest={quit}>
+                <AdwToolbarView topBar={<AdwHeaderBar />}>
                     <AdwStatusPage iconName="object-select-symbolic" title="Sikeres betöltés" description={returnedString} />
                 </AdwToolbarView>
             </AdwApplicationWindow>
@@ -96,12 +94,9 @@ export const App = () => {
     }
 
     return (
-        <AdwApplicationWindow title="Hiba" widthRequest={360} heightRequest={294} onClose={() => quit()}>
-            <AdwToolbarView>
-                <AdwToolbarView.AddTopBar>
-                    <AdwHeaderBar />
-                </AdwToolbarView.AddTopBar>
-                <AdwStatusPage iconName="dialog-error-symbolic" title="Hitelesítési hiba" description={returnedString} />
+        <AdwApplicationWindow title="Hiba" widthRequest={360} heightRequest={294} onCloseRequest={quit}>
+            <AdwToolbarView topBar={<AdwHeaderBar />}>
+                <AdwStatusPage iconName="dialog-error-symbolic" title="Hitelesítési / Futtatási hiba" description={returnedString} />
             </AdwToolbarView>
         </AdwApplicationWindow>
     );

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=HD Sentinel UI
+Exec=AppRun
+Icon=hd-sentinel
+Categories=Utility;System;
+Comment=Hard Disk Sentinel UI with React & GTK4
+Terminal=false

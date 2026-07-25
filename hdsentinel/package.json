@@ -1,0 +1,35 @@
+{
+    "name": "hdsentinel",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "imports": {
+        "#data/*": "./data/*"
+    },
+    "scripts": {
+        "dev": "gtkx dev",
+        "build": "gtkx build",
+        "script":"chmod +x build_appimage.sh && ./build_appimage.sh",
+        "codegen": "gtkx codegen",
+        "typecheck": "gtkx codegen && tsc --noEmit",
+        "start": "node dist/bundle.js"
+    },
+    "allowScripts": {
+        "esbuild": true,
+        "@swc/core": true
+    },
+    "dependencies": {
+        "@gtkx/css": "1.0.0-rc.1",
+        "@gtkx/react": "1.0.0-rc.1",
+        "@gtkx/runtime": "1.0.0-rc.1",
+        "react": "^19.2.8"
+    },
+    "devDependencies": {
+        "@gtkx/cli": "1.0.0-rc.1",
+        "@gtkx/config": "1.0.0-rc.1",
+        "@types/node": "^26.1.1",
+        "@types/react": "^19.2.17",
+        "typescript": "^7.0.2",
+        "vite": "^8.1.5"
+    }
+}
