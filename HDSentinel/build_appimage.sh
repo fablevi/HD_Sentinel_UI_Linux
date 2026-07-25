@@ -1,9 +1,9 @@
 #!/bin/bash
 
-npm run build
-
 # Hibák esetén azonnal álljon le a szkript
 set -e
+
+npm run build
 
 echo "=== 1. AppDir struktúra takarítása és létrehozása ==="
 rm -rf AppDir
@@ -41,7 +41,7 @@ EOF
 
 chmod 755 AppDir/AppRun
 
-echo "=== 4. Kötelező metaadatok (Desktop fájl és ikon) létrehozása ==="
+echo "=== 4. Kötelező metaadatok (Desktop fájl és ikon hivatkozás) ==="
 cat << 'EOF' > AppDir/hd-sentinel.desktop
 [Desktop Entry]
 Type=Application
@@ -53,7 +53,9 @@ Comment=Hard Disk Sentinel UI with React & GTK4
 Terminal=false
 EOF
 
-touch AppDir/hd-sentinel.png
+# ✅ Szimbolikus link létrehozása a helyi iconset/AppIcon/sata_default.png fájlra
+# A readlink -f gondoskodik róla, hogy az absolute path-t csatolja a linkhez
+ln -s "$(readlink -f iconset/AppIcon/sata_default.png)" AppDir/hd-sentinel.png
 
 echo "=== 5. AppImage készítő eszköz ellenőrzése / letöltése ==="
 if [ ! -f "appimagetool-x86_64.AppImage" ]; then

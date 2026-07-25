@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import { AdwApplicationWindow, AdwHeaderBar, quit, AdwToolbarView, AdwStatusPage } from "@gtkx/react";// @ts-ignore
-import { exec, execFileSync } from "child_process";
+import { AdwApplicationWindow, AdwHeaderBar, quit, AdwToolbarView, AdwStatusPage } from "@gtkx/react";
+// @ts-ignore
+import { exec as execCb, execFileSync } from "child_process";
+// @ts-ignore
+import { promisify } from "util";
 // @ts-ignore
 import path from "path";
 // @ts-ignore
 import { fileURLToPath } from "url";
-import { ToolbarStyle } from "@gtkx/ffi/adw";
+
+const exec = promisify(execCb);
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -29,9 +33,10 @@ if (proc?.argv?.includes("--run-hdsentinel")) {
 }
 
 export const App = () => {
-    const [returnedString, setReturnedString] = useState<String>("Betöltés...");
+    const [returnedString, setReturnedString] = useState<string>("");
+    const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
 
-    function _callTerminalCommand() {
+    async function _callTerminalCommand() {
         const currentAppImage = proc?.env?.APPIMAGE;
 
         let command: string;
@@ -45,62 +50,61 @@ export const App = () => {
             command = `pkexec ${envPass} "${currentAppImage}" --run-hdsentinel`;
         } else {
             const binaryPath = path.resolve(dirname, "../exec/HDSentinel");
-            // Dev környezetben is átadjuk a -xml -dump opciókat
             command = `pkexec ${envPass} "${binaryPath}" -xml -dump`;
         }
 
-        setReturnedString("Hitelesítés szükséges...");
         console.log(`[GTKX] Futtatott parancs: ${command}`);
 
-        exec(command, (error: any, stdout: any, stderr: any) => {
-            if (error) {
-                console.error(`[GTKX Hiba]: ${error.message}`);
-                setReturnedString(`Hiba: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.warn(`[GTKX Stderr]: ${stderr}`);
-                if (!stdout) {
-                    setReturnedString(`Hiba: ${stderr.trim()}`);
-                    return;
-                }
-            }
+        const { stdout, stderr } = await exec(command);
 
-            console.log(`[GTKX Kimenet]: ${stdout}`);
-            setReturnedString(stdout.trim() || "Sikeres futás (nincs kimenet)");
-        });
+        if (stderr && !stdout) {
+            throw new Error(stderr.trim());
+        }
+
+        console.log(`[GTKX Kimenet]: ${stdout}`);
+        setReturnedString(stdout.trim() || "Sikeres futás (nincs kimenet)");
+        return stdout;
     }
 
     useEffect(() => {
-        //callTerminalCommand();
+        _callTerminalCommand()
+            .then(() => {
+                setOpenMainWindow("open");
+            })
+            .catch((err) => {
+                console.error("[GTKX Hiba caught]:", err);
+                setReturnedString(`Hiba: ${err.message || err}`);
+                setOpenMainWindow("error");
+            });
     }, []);
 
-    return (
-        <AdwApplicationWindow
-            title="Tasks"
-            widthRequest={360}
-            heightRequest={294}
-            onClose={() => quit()}
-        >
-            <AdwHeaderBar></AdwHeaderBar>
-           
+    if (openMainWindow === "idle") {
+        return null;
+    }
 
+    if (openMainWindow === "open") {
+        return (
+            <AdwApplicationWindow title="HD Sentinel" widthRequest={360} heightRequest={294} onClose={() => quit()}>
+                <AdwToolbarView>
+                    <AdwToolbarView.AddTopBar>
+                        <AdwHeaderBar />
+                    </AdwToolbarView.AddTopBar>
+                    <AdwStatusPage iconName="object-select-symbolic" title="Sikeres betöltés" description={returnedString} />
+                </AdwToolbarView>
+            </AdwApplicationWindow>
+        );
+    }
+
+    return (
+        <AdwApplicationWindow title="Hiba" widthRequest={360} heightRequest={294} onClose={() => quit()}>
+            <AdwToolbarView>
+                <AdwToolbarView.AddTopBar>
+                    <AdwHeaderBar />
+                </AdwToolbarView.AddTopBar>
+                <AdwStatusPage iconName="dialog-error-symbolic" title="Hitelesítési hiba" description={returnedString} />
+            </AdwToolbarView>
         </AdwApplicationWindow>
     );
 };
 
 export default App;
-
-/*
- <AdwToolbarView topBarStyle={1}>
-                <AdwStatusPage
-                    iconName="checkbox-checked-symbolic"
-                    title="No Tasks Yet"
-                    description="Your tasks will show up here."
-                /></AdwToolbarView>
-
-
- <GtkApplicationWindow title="HD Sentinel UI" defaultWidth={500} defaultHeight={400} onClose={quit}>
-            
-        </GtkApplicationWindow>
-*/
