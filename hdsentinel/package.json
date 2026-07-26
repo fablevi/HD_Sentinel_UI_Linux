@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "gtkx dev",
         "build": "gtkx build",
-        "script":"chmod +x build_appimage.sh && ./build_appimage.sh",
+        "script": "chmod +x build_appimage.sh && ./build_appimage.sh",
         "codegen": "gtkx codegen",
         "typecheck": "gtkx codegen && tsc --noEmit",
         "start": "node dist/bundle.js"
@@ -22,6 +22,7 @@
         "@gtkx/css": "1.0.0-rc.1",
         "@gtkx/react": "1.0.0-rc.1",
         "@gtkx/runtime": "1.0.0-rc.1",
+        "fast-xml-parser": "^5.10.1",
         "react": "^19.2.8"
     },
     "devDependencies": {

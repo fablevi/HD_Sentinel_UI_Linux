@@ -17,6 +17,9 @@ importers:
       '@gtkx/runtime':
         specifier: 1.0.0-rc.1
         version: 1.0.0-rc.1
+      fast-xml-parser:
+        specifier: ^5.10.1
+        version: 5.10.1
       react:
         specifier: ^19.2.8
         version: 19.2.8
