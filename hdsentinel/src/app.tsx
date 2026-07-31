@@ -11,6 +11,7 @@ import * as console from "node:console";
 import fs from "fs";
 import { parseXmlToJson } from "./helper/XMLtoJSON.js";
 import { HDSentinelRoot } from "./models/hdsentinel.model.js";
+import MainComponent from "./components/MainComponent.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -64,8 +65,8 @@ if (proc?.argv?.includes("--run-hdsentinel-loop")) {
 }
 
 export const App = () => {
-    const windowWidth = 420;
-    const windowHeight = 480;
+    const windowWidth = 960;
+    const windowHeight = 540;
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
 
@@ -231,8 +232,8 @@ export const App = () => {
 
     useEffect(() => {
         if (hdSentinelDump) {
-            const diskName = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information_Disk?.[0]?.Hard_Disk_Summary?.Hard_Disk_Device;
-            const temp = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information_Disk?.[0]?.Hard_Disk_Summary?.Current_Temperature;
+            const diskName = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information?.[0]?.Hard_Disk_Summary?.Hard_Disk_Device;
+            const temp = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information?.[0]?.Hard_Disk_Summary?.Current_Temperature;
             console.log(`[GTKX Poll Stream] Disk: ${diskName} | Temp: ${temp} °C`);
         }
     }, [hdSentinelDump]);
@@ -244,13 +245,9 @@ export const App = () => {
     if (openMainWindow === "open") {
         return (
             <AdwApplicationWindow title="HD Sentinel" widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-                <AdwToolbarView topBar={<AdwHeaderBar />}>
-                    <AdwStatusPage
-                        iconName="checkbox-checked-symbolic"
-                        title="No Tasks Yet"
-                        description={"SSD Celsius " + hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information_Disk?.[0]?.Hard_Disk_Summary?.Current_Temperature}
-                    />
-                </AdwToolbarView>
+                <MainComponent
+                    hdSentinelDump={hdSentinelDump}
+                />
             </AdwApplicationWindow>
         );
     }
@@ -263,3 +260,11 @@ export const App = () => {
         </AdwApplicationWindow>
     );
 };
+
+/*
+<AdwToolbarView topBar={<AdwHeaderBar />}>
+                    <MainComponent
+                        hdSentinelDump={hdSentinelDump}
+                    />
+                </AdwToolbarView>
+ */

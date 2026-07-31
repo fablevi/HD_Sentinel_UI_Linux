@@ -10,7 +10,7 @@ export interface XmlMeta {
 
 export interface HardDiskSentinel {
     General_Information: GeneralInformation;
-    Physical_Disk_Information_Disk: PhysicalDiskInformation[];
+    Physical_Disk_Information: PhysicalDiskInformation[];
     Partition_Information: PartitionInformation;
 }
 
@@ -206,7 +206,7 @@ export interface PartitionDetails {
         "Uptime": "13611 sec (0 days, 3 hours, 46 min, 51 sec)"
       }
     },
-    "Physical_Disk_Information_Disk": [
+    "Physical_Disk_Information": [
       {
         "Hard_Disk_Summary": {
           "Hard_Disk_Number": 0,
