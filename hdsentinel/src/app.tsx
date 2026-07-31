@@ -159,6 +159,7 @@ export const App = () => {
                     if (lastXml) {
                         try {
                             const jsonData = parseXmlToJson(lastXml);
+                            console.log(jsonData)
                             setHdSentinelDump(jsonData);
                             setOpenMainWindow("open");
                         } catch (err) {
@@ -232,9 +233,7 @@ export const App = () => {
 
     useEffect(() => {
         if (hdSentinelDump) {
-            const diskName = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information?.[0]?.Hard_Disk_Summary?.Hard_Disk_Device;
-            const temp = hdSentinelDump?.Hard_Disk_Sentinel?.Physical_Disk_Information?.[0]?.Hard_Disk_Summary?.Current_Temperature;
-            console.log(`[GTKX Poll Stream] Disk: ${diskName} | Temp: ${temp} °C`);
+            console.log(`HDSentinel poll heartbeat...`);
         }
     }, [hdSentinelDump]);
 
