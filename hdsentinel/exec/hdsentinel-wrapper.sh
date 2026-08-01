@@ -19,7 +19,7 @@ while [ -e "${CTRL_FILE}" ]; do
     sleep 1
   fi
   echo "---HDS_DUMP_END---"
-  sleep 10
+  sleep 1
 done
 
 rm -f "${CTRL_FILE}"

@@ -159,7 +159,6 @@ export const App = () => {
                     if (lastXml) {
                         try {
                             const jsonData = parseXmlToJson(lastXml);
-                            console.log(jsonData)
                             setHdSentinelDump(jsonData);
                             setOpenMainWindow("open");
                         } catch (err) {
@@ -231,11 +230,11 @@ export const App = () => {
         };
     }, []); // run once
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (hdSentinelDump) {
             console.log(`HDSentinel poll heartbeat...`);
         }
-    }, [hdSentinelDump]);
+    }, [hdSentinelDump]);*/
 
     if (openMainWindow === "idle") {
         return null;
