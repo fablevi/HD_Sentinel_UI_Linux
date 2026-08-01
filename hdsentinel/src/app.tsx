@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage } from "@gtkx/jsx/adw";
 import { quit } from "@gtkx/react";
+
 // @ts-ignore
 import { spawn } from "child_process";
 // @ts-ignore
@@ -12,6 +13,7 @@ import fs from "fs";
 import { parseXmlToJson } from "./helper/XMLtoJSON.js";
 import { HDSentinelRoot } from "./models/hdsentinel.model.js";
 import MainComponent from "./components/MainComponent.js";
+import { WindowTitle } from "@gtkx/gi/adw";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -69,6 +71,7 @@ export const App = () => {
     const windowHeight = 540;
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
+    const [titleString, setTitleString] = useState<string>("");
 
     // compute runtime dir and control file path once
     const runtimeDir = proc?.env?.XDG_RUNTIME_DIR || `/run/user/${proc.getuid ? proc.getuid() : "1000"}`;
@@ -242,27 +245,20 @@ export const App = () => {
 
     if (openMainWindow === "open") {
         return (
-            <AdwApplicationWindow title="HD Sentinel" widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-                <MainComponent
-                    hdSentinelDump={hdSentinelDump}
-                />
+            <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
+                    <MainComponent
+                        hdSentinelDump={hdSentinelDump}
+                        setTitleString={setTitleString}
+                    />
             </AdwApplicationWindow>
         );
     }
 
     return (
-        <AdwApplicationWindow title="Hiba" widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
+        <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
             <AdwToolbarView topBar={<AdwHeaderBar />}>
-                <AdwStatusPage iconName="dialog-error-symbolic" title="Hitelesítési / Futtatási hiba" />
+                <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated" description={`Close the program and reauthenticate`}/>
             </AdwToolbarView>
         </AdwApplicationWindow>
     );
 };
-
-/*
-<AdwToolbarView topBar={<AdwHeaderBar />}>
-                    <MainComponent
-                        hdSentinelDump={hdSentinelDump}
-                    />
-                </AdwToolbarView>
- */
