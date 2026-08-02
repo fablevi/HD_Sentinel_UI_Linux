@@ -1,255 +1,161 @@
-import { useState, useEffect } from "react";
-import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage } from "@gtkx/jsx/adw";
+import React, { useState, useEffect } from "react";
+import { GtkBox, GtkLabel, GtkLinkButton, GtkDropTarget } from "@gtkx/jsx/gtk";
+import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView } from "@gtkx/jsx/adw";
+import { File } from "@gtkx/gi/gio";
+import * as Gtk from "@gtkx/gi/gtk";
+import * as Gdk from "@gtkx/gi/gdk";
+import * as GObject from "@gtkx/gi/gobject";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import { quit } from "@gtkx/react";
-
-// @ts-ignore
-import { spawn } from "child_process";
-// @ts-ignore
-import path from "path";
-// @ts-ignore
-import { fileURLToPath } from "url";
-import * as console from "node:console";
-import fs from "fs";
-import { parseXmlToJson } from "./helper/XMLtoJSON.js";
-import { HDSentinelRoot } from "./models/hdsentinel.model.js";
-import MainComponent from "./components/MainComponent.js";
-import { WindowTitle } from "@gtkx/gi/adw";
-
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
-
-const proc = (globalThis as any).process;
-
-/**
- * NOTE:
- * This file expects a wrapper script to be packaged inside the AppImage (e.g. AppDir/exec/hdsentinel-wrapper.sh).
- * The wrapper runs as root (via pkexec) and creates a control file in the user's XDG_RUNTIME_DIR.
- * The GUI deletes that control file on exit; the wrapper notices and exits cleanly.
- *
- * Wrapper example (exec/hdsentinel-wrapper.sh):
- * #!/bin/sh
- * HDS_BIN="$1"
- * RUNTIME_DIR="$2"
- * CTRL_FILE="${RUNTIME_DIR}/hdsentinel-ctrl"
- * mkdir -p "${RUNTIME_DIR}"
- * touch "${CTRL_FILE}"
- * trap 'rm -f "${CTRL_FILE}"; exit 0' INT TERM EXIT
- * while [ -e "${CTRL_FILE}" ]; do
- *   if "${HDS_BIN}" -xml -dump; then :; else sleep 1; fi
- *   echo "---HDS_DUMP_END---"
- *   sleep 1
- * done
- * rm -f "${CTRL_FILE}"
- * exit 0
- */
-
-if (proc?.argv?.includes("--run-hdsentinel-loop")) {
-    // Backwards compatibility: if the AppImage itself is invoked with --run-hdsentinel-loop,
-    // the bundle will run the loop directly (used in some dev flows). Keep original behavior.
-    const appDir = proc.env.APPDIR;
-    const binaryPath = appDir
-        ? path.join(appDir, "exec/HDSentinel")
-        : path.resolve(dirname, "../exec/HDSentinel");
-
-    const runLoop = async () => {
-        while (true) {
-            try {
-                const { execFileSync } = await import("child_process");
-                const output = execFileSync(binaryPath, ["-xml", "-dump"], { encoding: "utf-8" });
-                proc.stdout.write("---HDS_DUMP_START---\n" + output + "\n---HDS_DUMP_END---\n");
-            } catch (e: any) {
-                proc.stderr.write(e.message || "Hiba");
-            }
-            await new Promise((res) => setTimeout(res, 1000));
-        }
-    };
-    runLoop();
-}
 
 export const App = () => {
     const windowWidth = 960;
     const windowHeight = 540;
-    const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
-    const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
-    const [titleString, setTitleString] = useState<string>("");
 
-    // compute runtime dir and control file path once
-    const runtimeDir = proc?.env?.XDG_RUNTIME_DIR || `/run/user/${proc.getuid ? proc.getuid() : "1000"}`;
-    const ctrlFile = path.join(runtimeDir, "hdsentinel-ctrl");
+    const [_isHDSentinelExecutableIsAvailable, _setIsHDSentinelExecutableIsAvailable] = useState<"loading" | "notfound" | "available">("loading");
+    const [reloadHDSentinellSearch, setReloadHDSentinellSearch] = useState<boolean>(false);
+    const [dropError, setDropError] = useState<string | null>(null);
 
-    // handleClose: remove control file (wrapper will exit) then quit GUI
-    const handleClose = () => {
-        try {
-            if (fs.existsSync(ctrlFile)) {
-                fs.unlinkSync(ctrlFile);
-                console.log("[GTKX] ctrl file removed by GUI:", ctrlFile);
-            }
-        } catch (e) {
-            console.error("[GTKX] Failed to remove ctrl file:", e);
+    const targetDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
+    const executablePath = path.join(targetDir, "HDSentinel");
+
+    useEffect(() => {
+        if (fs.existsSync(executablePath)) {
+            _setIsHDSentinelExecutableIsAvailable("available");
+        } else {
+            _setIsHDSentinelExecutableIsAvailable("notfound");
         }
+    }, [reloadHDSentinellSearch]);
 
-        // small delay to allow wrapper to exit cleanly and flush stdout
+    const handleClose = () => {
         setTimeout(() => {
             quit();
         }, 200);
-
         return undefined;
     };
 
-    useEffect(() => {
-        const currentAppImage = proc?.env?.APPIMAGE;
+    function _reloadHDSentinellSearch() {
+        setReloadHDSentinellSearch((prev) => !prev);
+    }
 
-        const display = proc?.env?.DISPLAY || ":0";
-        const xauth = proc?.env?.XAUTHORITY || "";
-        const ldLibrary = proc?.env?.LD_LIBRARY_PATH || "";
+    const handleDrop = (...args: any[]) => {
+        try {
+            console.log("=== DROP EVENT TRIGGERED ===");
+            setDropError(null);
 
-        // wrapper script path inside the AppImage (adjust if you place it elsewhere)
-        const wrapperPath = currentAppImage
-            ? path.resolve(dirname, "../exec/hdsentinel-wrapper.sh")
-            : path.resolve(dirname, "../exec/hdsentinel-wrapper.sh");
-        const hdsBinary = currentAppImage
-            ? path.resolve(dirname, "../exec/HDSentinel")
-            : path.resolve(dirname, "../exec/HDSentinel");
+            let fileObj: any = null;
+            const gvalue = args[0]; // Arg [0] a Gdk.Value / GValue
 
-        let childProc: any = null;
-
-        const startStream = () => {
-            // Build command to run wrapper with HDS binary and runtime dir
-            // We use sh -c so pkexec executes the wrapper script correctly
-            const wrapperCmd = `${wrapperPath} "${hdsBinary}" "${runtimeDir}"`;
-
-            const envObj = {
-                ...proc.env,
-                LD_LIBRARY_PATH: ldLibrary,
-                DISPLAY: display,
-                XAUTHORITY: xauth,
-                XDG_RUNTIME_DIR: runtimeDir,
-            };
-
-            // Spawn pkexec to run the wrapper as root. We capture stdout/stderr but ignore stdin.
-            childProc = spawn("pkexec", ["sh", "-c", wrapperCmd], {
-                detached: true,
-                stdio: ["ignore", "pipe", "pipe"],
-                env: envObj,
-            });
-
-            // unref so the child doesn't keep the parent alive if possible
-            try {
-                childProc.unref();
-            } catch (e) {
-                // ignore if unref not available
+            // Próbáljuk kibontani az értéket a Value objektumból
+            if (gvalue) {
+                if (typeof gvalue.getGObject === "function") {
+                    fileObj = gvalue.getGObject();
+                } else if (typeof gvalue.getObject === "function") {
+                    fileObj = gvalue.getObject();
+                } else if (typeof gvalue.getBoxed === "function") {
+                    fileObj = gvalue.getBoxed();
+                } else if (typeof gvalue.getValue === "function") {
+                    fileObj = gvalue.getValue();
+                } else if (gvalue.value) {
+                    fileObj = gvalue.value;
+                }
             }
 
-            try {
-                console.log(`[GTKX] spawned pkexec pid=${childProc.pid} ppid=${proc.pid}`);
-            } catch (e) {}
+            console.log("-> Value-ból kibontott fileObj:", fileObj);
+            console.log("-> fileObj metódusai:", fileObj ? Object.keys(Object.getPrototypeOf(fileObj)) : "null");
 
-            let buffer = "";
+            let filePath: string | null = null;
 
-            // ensure encoding
-            try {
-                childProc.stdout.setEncoding("utf8");
-            } catch (e) {}
-
-            childProc.stdout.on("data", (chunk: Buffer | string) => {
-                buffer += chunk.toString();
-
-                if (buffer.includes("---HDS_DUMP_END---")) {
-                    const parts = buffer.split("---HDS_DUMP_END---");
-                    const lastXml = (parts[parts.length - 2] || "").replace("---HDS_DUMP_START---", "").trim();
-                    buffer = parts[parts.length - 1] || "";
-
-                    if (lastXml) {
-                        try {
-                            const jsonData = parseXmlToJson(lastXml);
-                            setHdSentinelDump(jsonData);
-                            setOpenMainWindow("open");
-                        } catch (err) {
-                            console.error("[GTKX Parsing Error]:", err);
-                        }
-                    }
+            if (fileObj) {
+                if (typeof fileObj.getPath === "function") {
+                    filePath = fileObj.getPath();
+                } else if (typeof fileObj.get_path === "function") {
+                    filePath = fileObj.get_path();
+                } else if (typeof fileObj === "string") {
+                    filePath = fileObj;
                 }
-            });
-
-            childProc.stderr.on("data", (data: Buffer) => {
-                console.error(`[GTKX Stderr]: ${data.toString()}`);
-            });
-
-            childProc.on("exit", (code: number, signal: string) => {
-                console.warn(`[GTKX] pkexec/wrapper exited pid=${childProc?.pid} code=${code} signal=${signal}`);
-                // If wrapper exited unexpectedly, show error window
-                if (code !== 0) {
-                    setOpenMainWindow("error");
-                }
-            });
-
-            childProc.on("error", (err: any) => {
-                console.error("[GTKX Process Error]:", err);
-                setOpenMainWindow("error");
-            });
-        };
-
-        // Start the wrapper stream
-        startStream();
-
-        // cleanup function: remove control file (wrapper will exit) and remove process-level handlers
-        const cleanup = () => {
-            try {
-                if (fs.existsSync(ctrlFile)) {
-                    fs.unlinkSync(ctrlFile);
-                    console.log("[GTKX] ctrl file removed in cleanup:", ctrlFile);
-                }
-            } catch (e) {
-                console.error("[GTKX] cleanup failed to remove ctrl file:", e);
             }
-        };
 
-        // process-level handlers to ensure cleanup on signals or uncaught exceptions
-        const onExit = () => cleanup();
-        const onSig = (sig: any) => {
-            cleanup();
-            // re-raise default behavior if possible
-            try {
-                proc.kill(proc.pid, sig);
-            } catch (e) {}
-        };
+            console.log("-> Felismert elérési út (filePath):", filePath);
 
-        proc.on("exit", onExit);
-        proc.on("SIGINT", onSig);
-        proc.on("SIGTERM", onSig);
-        proc.on("uncaughtException", (err: any) => {
-            console.error("[GTKX Uncaught Exception]:", err);
-            cleanup();
-        });
+            if (!filePath) {
+                console.warn("X Nem sikerült kibontani a fájl elérési útját!");
+                setDropError("A bedobott elem nem érvényes fájl!");
+                return false;
+            }
 
-        // React cleanup: run when component unmounts
-        return () => {
-            cleanup();
-            try {
-                proc.off("exit", onExit);
-                proc.off("SIGINT", onSig);
-                proc.off("SIGTERM", onSig);
-            } catch (e) {}
-        };
-    }, []); // run once
+            const fileName = path.basename(filePath);
+            console.log("-> Fájlnév:", fileName);
 
-    /*useEffect(() => {
-        if (hdSentinelDump) {
-            console.log(`HDSentinel poll heartbeat...`);
+            if (fileName !== "HDSentinel") {
+                console.warn(`X Hibás fájlnév! Várt: "HDSentinel", kapott: "${fileName}"`);
+                setDropError(`Hibás fájl! A fájl neve "HDSentinel" kell legyen (a kapott fájl: "${fileName}").`);
+                return false;
+            }
+
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            fs.copyFileSync(filePath, executablePath);
+            fs.chmodSync(executablePath, 0o755);
+            console.log("✓ Sikeres fájlmásolás ide:", executablePath);
+
+            _reloadHDSentinellSearch();
+            return true;
+        } catch (err) {
+            console.error("X Hiba a fájl feldolgozásakor:", err);
+            setDropError("Sikertelen fájlmásolás!");
+            return false;
         }
-    }, [hdSentinelDump]);*/
+    };
 
-    if (openMainWindow === "idle") {
+    if (_isHDSentinelExecutableIsAvailable === "loading") {
         return null;
     }
 
-    if (openMainWindow === "open") {
+    if (_isHDSentinelExecutableIsAvailable === "notfound") {
         return (
-            <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-                    <MainComponent
-                        hdSentinelDump={hdSentinelDump}
-                        setTitleString={setTitleString}
-                    />
+            <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
+                <AdwToolbarView topBar={<AdwHeaderBar />}>
+                    <GtkBox
+                        orientation={Gtk.Orientation.VERTICAL}
+                        spacing={10}
+                        valign={Gtk.Align.CENTER}
+                        halign={Gtk.Align.CENTER}
+                        hexpand={true}
+                        vexpand={true}
+                        controllers={[
+                            <GtkDropTarget
+                                key="drop-target"
+                                actions={Gdk.DragAction.COPY}
+                                types={[GObject.typeFromName("GFile")]}
+                                preload={true}
+                                onDrop={(...args: any[]) => handleDrop(...args)}
+                            />
+                        ]}
+                    >
+                        <GtkLabel
+                            label="Hiba: A HDSentinel executable nem található!"
+                            cssClasses={["error", "title-2"]}
+                        />
+                        <GtkLabel
+                            label="Húzd ide a fájlt vagy helyezd el a ~/.cache/hdsentinel/exec/ mappában."
+                            cssClasses={["dim-label"]}
+                        />
+
+                        {dropError && (
+                            <GtkLabel label={dropError} cssClasses={["error"]} />
+                        )}
+
+                        <GtkLinkButton
+                            label={"HDSentinel letöltése (Linux x64)"}
+                            uri={"https://www.hdsentinel.com/hdslin/hdsentinel-020c-x64.zip"}
+                        />
+                    </GtkBox>
+                </AdwToolbarView>
             </AdwApplicationWindow>
         );
     }
@@ -257,7 +163,9 @@ export const App = () => {
     return (
         <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
             <AdwToolbarView topBar={<AdwHeaderBar />}>
-                <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated" description={`Close the program and reauthenticate`}/>
+                <GtkBox orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER} halign={Gtk.Align.CENTER}>
+                    <GtkLabel label="HDSentinel megtalálva!" cssClasses={["success"]} />
+                </GtkBox>
             </AdwToolbarView>
         </AdwApplicationWindow>
     );
