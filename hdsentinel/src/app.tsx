@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { quit } from "@gtkx/react";
+import {Runner} from "./Runner.js";
 
 export const App = () => {
     const windowWidth = 960;
@@ -161,6 +162,10 @@ export const App = () => {
     }
 
     return (
+        <Runner/>
+    )
+
+    /*return (
         <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
             <AdwToolbarView topBar={<AdwHeaderBar />}>
                 <GtkBox orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER} halign={Gtk.Align.CENTER}>
@@ -168,5 +173,5 @@ export const App = () => {
                 </GtkBox>
             </AdwToolbarView>
         </AdwApplicationWindow>
-    );
+    );*/
 };

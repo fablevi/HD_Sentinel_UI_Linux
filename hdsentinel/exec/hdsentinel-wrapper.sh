@@ -3,7 +3,7 @@
 # Arg1: path to HDSentinel binary
 # Arg2: runtime dir for control file
 
-HDS_BIN="$1"
+HDS_BIN="${1:-$HOME/.cache/hdsentinel/exec/HDSentinel}"
 RUNTIME_DIR="$2"
 CTRL_FILE="${RUNTIME_DIR}/hdsentinel-ctrl"
 
