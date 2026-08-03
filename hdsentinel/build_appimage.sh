@@ -10,16 +10,16 @@ rm -rf AppDir
 mkdir -p AppDir/usr/bin
 mkdir -p AppDir/exec
 
-echo "=== 2. Fájlok átmásolása (dist és exec jogosultság-megőrzéssel) ==="
+echo "=== 2. Fájlok átmásolása (dist és wrapper script) ==="
 # Bemásoljuk a buildelt dist mappát
 cp -r dist AppDir/
 
-# A -a (archive) kapcsoló gondoskodik róla, hogy a fájlrendszer attribútumok és jogok megmaradjanak
-cp -a exec/HDSentinel AppDir/exec/HDSentinel
+# Bemásoljuk a hdsentinel-wrapper.sh szkriptet az exec mappába
+cp -a exec/hdsentinel-wrapper.sh AppDir/exec/hdsentinel-wrapper.sh
 
-# Biztonsági kényszerítés: az AppDir-en belül a binárisnak legyen futtatási joga
-chmod 755 AppDir/exec/HDSentinel
-chmod +x AppDir/exec/HDSentinel
+# Kifejezett futtatási jog megadása a wrapper scriptre
+chmod 755 AppDir/exec/hdsentinel-wrapper.sh
+chmod +x AppDir/exec/hdsentinel-wrapper.sh
 
 echo "=== 3. AppRun indítószkript létrehozása ==="
 cat << 'EOF' > AppDir/AppRun
@@ -27,13 +27,13 @@ cat << 'EOF' > AppDir/AppRun
 HERE="$(dirname "$(readlink -f "${0}")")"
 
 export PATH="/usr/bin:/usr/local/bin:${PATH}"
-export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"-
+export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
 
 if [ "$EUID" -eq 0 ]; then
     export XDG_RUNTIME_DIR=/run/user/$(logname -i 2>/dev/null || id -u ${SUDO_USER:-root})
 fi
 
-# Továbbítjuk az összes argumentumot a Node felé ($@) - Ez kell a --run-hdsentinel kapcsolónak!
+# Továbbítjuk az összes argumentumot a Node felé ($@)
 exec node "${HERE}/dist/bundle.js" "$@"
 EOF
 
@@ -51,9 +51,8 @@ Comment=Hard Disk Sentinel UI with React & GTK4
 Terminal=false
 EOF
 
-# ✅ Szimbolikus link létrehozása a helyi iconset/AppIcon/sata_default.png fájlra
-# A readlink -f gondoskodik róla, hogy az absolute path-t csatolja a linkhez
-ln -s "$(readlink -f iconset/AppIcon/sata_default.png)" AppDir/hd-sentinel.png
+# Szimbolikus link létrehozása a helyi iconset/AppIcon/sata_default.png fájlra
+ln -sf "$(readlink -f sata_default.png)" AppDir/hd-sentinel.png
 
 echo "=== 5. AppImage készítő eszköz ellenőrzése / letöltése ==="
 if [ ! -f "appimagetool-x86_64.AppImage" ]; then
@@ -63,7 +62,6 @@ if [ ! -f "appimagetool-x86_64.AppImage" ]; then
 fi
 
 echo "=== 6. Csomagolás az appimagetool segítségével ==="
-# Kényszerítjük az ARCH-ot
 export ARCH=x86_64
 ./appimagetool-x86_64.AppImage AppDir
 

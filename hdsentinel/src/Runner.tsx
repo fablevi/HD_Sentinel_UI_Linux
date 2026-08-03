@@ -20,8 +20,10 @@ const dirname = path.dirname(filename);
 
 const proc = (globalThis as any).process;
 
-// Felhasználó cache mappájában lévő HDSentinel bináris
-const userHdsBinary = path.join(os.homedir(), ".cache", "hdsentinel", "exec", "HDSentinel");
+// Felhasználó cache mappái
+const userExecDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
+const userHdsBinary = path.join(userExecDir, "HDSentinel");
+const userWrapperScript = path.join(userExecDir, "hdsentinel-wrapper.sh");
 
 if (proc?.argv?.includes("--run-hdsentinel-loop")) {
     const runLoop = async () => {
@@ -71,30 +73,36 @@ export const Runner = () => {
         const xauth = proc?.env?.XAUTHORITY || "";
         const ldLibrary = proc?.env?.LD_LIBRARY_PATH || "";
 
-        // A wrapper script a meglévő exec mappában található
-        const wrapperPath = path.resolve(dirname, "../exec/hdsentinel-wrapper.sh");
+        // AppImage-en belüli wrapper útvonala
+        const bundleWrapperPath = path.resolve(dirname, "../exec/hdsentinel-wrapper.sh");
 
-        // A HDSentinel bináris a user .cache mappájában van
-        const hdsBinary = userHdsBinary;
+        // Gondooskodunk róla, hogy a wrapper kimásolódjon a ~/.cache/hdsentinel/exec/ mappába
+        try {
+            if (!fs.existsSync(userExecDir)) {
+                fs.mkdirSync(userExecDir, { recursive: true });
+            }
+            if (fs.existsSync(bundleWrapperPath)) {
+                fs.copyFileSync(bundleWrapperPath, userWrapperScript);
+                fs.chmodSync(userWrapperScript, 0o755);
+            }
+        } catch (e) {
+            console.error("[GTKX] Failed to sync wrapper script to user cache:", e);
+        }
 
         let childProc: any = null;
 
         const startStream = () => {
-            // Itt adjuk át az 1. argumentumként a ~/.cache/.../HDSentinel-t, 2. argumentumként a runtimeDir-t
-            const wrapperCmd = `"${wrapperPath}" "${hdsBinary}" "${runtimeDir}"`;
-
-            const envObj = {
-                ...proc.env,
-                LD_LIBRARY_PATH: ldLibrary,
-                DISPLAY: display,
-                XAUTHORITY: xauth,
-                XDG_RUNTIME_DIR: runtimeDir,
-            };
-
-            childProc = spawn("pkexec", ["sh", "-c", wrapperCmd], {
+            // A pkexec közvetlenül a felhasználó cache mappájában lévő wrapper scriptet futtatja!
+            childProc = spawn("pkexec", ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir], {
                 detached: true,
                 stdio: ["ignore", "pipe", "pipe"],
-                env: envObj,
+                env: {
+                    ...proc.env,
+                    LD_LIBRARY_PATH: ldLibrary,
+                    DISPLAY: display,
+                    XAUTHORITY: xauth,
+                    XDG_RUNTIME_DIR: runtimeDir,
+                },
             });
 
             try {
