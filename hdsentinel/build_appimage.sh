@@ -51,9 +51,16 @@ Comment=Hard Disk Sentinel UI with React & GTK4
 Terminal=false
 EOF
 
-# Szimbolikus link létrehozása a helyi iconset/AppIcon/sata_default.png fájlra
-ln -sf "$(readlink -f sata_default.png)" AppDir/hd-sentinel.png
-
+if [ -f "sata_default_rounded.png" ]; then
+    echo "Ikonként a sata_default_rounded.png használva."
+    cp -a sata_default_rounded.png AppDir/hd-sentinel.png
+elif [ -f "sata_default.png" ]; then
+    echo "Ikonként a sata_default.png használva."
+    cp -a sata_default.png AppDir/hd-sentinel.png
+else
+    echo "HIBA: Egyik ikon sem található a gyökérkönyvtárban!"
+    exit 1
+fi
 echo "=== 5. AppImage készítő eszköz ellenőrzése / letöltése ==="
 if [ ! -f "appimagetool-x86_64.AppImage" ]; then
     echo "appimagetool nem található, letöltés..."

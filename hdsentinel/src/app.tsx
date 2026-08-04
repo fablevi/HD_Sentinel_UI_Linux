@@ -120,7 +120,15 @@ export const App = () => {
     if (_isHDSentinelExecutableIsAvailable === "notfound") {
         return (
             <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-                <AdwToolbarView topBar={<AdwHeaderBar />}>
+                <AdwToolbarView topBar={<AdwHeaderBar />} controllers={[
+                    <GtkDropTarget
+                        key="drop-target"
+                        actions={Gdk.DragAction.COPY}
+                        types={[GObject.typeFromName("GFile")]}
+                        preload={true}
+                        onDrop={(...args: any[]) => handleDrop(...args)}
+                    />
+                ]}>
                     <GtkBox
                         orientation={Gtk.Orientation.VERTICAL}
                         spacing={10}
@@ -128,23 +136,10 @@ export const App = () => {
                         halign={Gtk.Align.CENTER}
                         hexpand={true}
                         vexpand={true}
-                        controllers={[
-                            <GtkDropTarget
-                                key="drop-target"
-                                actions={Gdk.DragAction.COPY}
-                                types={[GObject.typeFromName("GFile")]}
-                                preload={true}
-                                onDrop={(...args: any[]) => handleDrop(...args)}
-                            />
-                        ]}
                     >
                         <GtkLabel
-                            label="Hiba: A HDSentinel executable nem található!"
+                            label="Error: HDSentinel not found!"
                             cssClasses={["error", "title-2"]}
-                        />
-                        <GtkLabel
-                            label="Húzd ide a fájlt vagy helyezd el a ~/.cache/hdsentinel/exec/ mappában."
-                            cssClasses={["dim-label"]}
                         />
 
                         {dropError && (
@@ -152,7 +147,7 @@ export const App = () => {
                         )}
 
                         <GtkLinkButton
-                            label={"HDSentinel letöltése (Linux x64)"}
+                            label={"Download HD Sentinel from the link below, extract it, and drop it here."}
                             uri={"https://www.hdsentinel.com/hdslin/hdsentinel-020c-x64.zip"}
                         />
                     </GtkBox>
@@ -164,14 +159,4 @@ export const App = () => {
     return (
         <Runner/>
     )
-
-    /*return (
-        <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-            <AdwToolbarView topBar={<AdwHeaderBar />}>
-                <GtkBox orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER} halign={Gtk.Align.CENTER}>
-                    <GtkLabel label="HDSentinel megtalálva!" cssClasses={["success"]} />
-                </GtkBox>
-            </AdwToolbarView>
-        </AdwApplicationWindow>
-    );*/
 };

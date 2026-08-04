@@ -404,6 +404,6 @@ export interface PartitionDetails {
     <Partition Drive="/run/media/fablevi/CCCOMA_X64FRE_HU-HU_DV9 (Disk #1)" Total_Space="14,804 MB" Free_Space=" 8,418 MB" Free_Space_Percent=" 57 %" Disk="/dev/sda1" BlockSize="4096" Files="8685436" FileSystem="1702057286" />
     <Partition Drive="/run/media/fablevi/Ventoy (Disk #2)" Total_Space="29,529 MB" Free_Space="11,782 MB" Free_Space_Percent=" 40 %" Disk="/dev/sdb1" BlockSize="32768" Files="0" FileSystem="538032816" />
   </Partition_Information>
-</Hard_Disk_Sentinel>
+</Hard_Disk_Sentinel>auto
 
  */

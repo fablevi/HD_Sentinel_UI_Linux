@@ -14,6 +14,8 @@ import os from "os";
 import { parseXmlToJson } from "./helper/XMLtoJSON.js";
 import { HDSentinelRoot } from "./models/hdsentinel.model.js";
 import MainComponent from "./components/MainComponent.js";
+import {RamInfo} from "./models/ram.model.js";
+import {parseDmidecodeRam} from "./helper/parseDmidecode.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -45,6 +47,7 @@ export const Runner = () => {
     const windowWidth = 960;
     const windowHeight = 540;
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
+    const [ramData, setRamData] = useState<RamInfo | undefined>();
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
     const [titleString, setTitleString] = useState<string>("");
 
@@ -55,7 +58,7 @@ export const Runner = () => {
         try {
             if (fs.existsSync(ctrlFile)) {
                 fs.unlinkSync(ctrlFile);
-                console.log("[GTKX] ctrl file removed by GUI:", ctrlFile);
+                console.log("[GTKX] ctrl file rsetRamDataemoved by GUI:", ctrlFile);
             }
         } catch (e) {
             console.error("[GTKX] Failed to remove ctrl file:", e);
@@ -76,7 +79,7 @@ export const Runner = () => {
         // AppImage-en belüli wrapper útvonala
         const bundleWrapperPath = path.resolve(dirname, "../exec/hdsentinel-wrapper.sh");
 
-        // Gondooskodunk róla, hogy a wrapper kimásolódjon a ~/.cache/hdsentinel/exec/ mappába
+        // Gondoskodunk róla, hogy a wrapper kimásolódjon a ~/.cache/hdsentinel/exec/ mappába
         try {
             if (!fs.existsSync(userExecDir)) {
                 fs.mkdirSync(userExecDir, { recursive: true });
@@ -122,6 +125,20 @@ export const Runner = () => {
             childProc.stdout.on("data", (chunk: Buffer | string) => {
                 buffer += chunk.toString();
 
+                // 1. RAM DMI-decode elcsípése (A wrapper indításakor egyszer fut le)
+                if (buffer.includes("---RAM_DUMP_END---")) {
+                    const parts = buffer.split("---RAM_DUMP_END---");
+                    const ramBlock = (parts[0] || "").replace("---RAM_DUMP_START---", "").trim();
+                    buffer = parts[1] || "";
+
+                    if (ramBlock) {
+                        console.log("[GTKX] RAM DMI Data received");
+                        const parsedRamData = parseDmidecodeRam(ramBlock);
+                        setRamData(parsedRamData);
+                    }
+                }
+
+                // 2. HDSentinel XML dump elcsípése (Folyamatos ciklus)
                 if (buffer.includes("---HDS_DUMP_END---")) {
                     const parts = buffer.split("---HDS_DUMP_END---");
                     const lastXml = (parts[parts.length - 2] || "").replace("---HDS_DUMP_START---", "").trim();
@@ -204,6 +221,7 @@ export const Runner = () => {
             <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
                 <MainComponent
                     hdSentinelDump={hdSentinelDump}
+                    ramData={ramData}
                     setTitleString={setTitleString}
                 />
             </AdwApplicationWindow>

@@ -20,6 +20,7 @@ import usbDefault from "../../assets/png/usb_default-0.png";
 import usbGood from "../../assets/png/usb_good-0.png";
 import usbStick from "../../assets/png/usb_stick-0.png";
 import usbWarning from "../../assets/png/usb_warning-0.png";
+import ramDefault from "../../assets/png/ram-default.png";
 
 const ASSETS_MAP = {
     "lan-default": lanDefault,
@@ -37,6 +38,7 @@ const ASSETS_MAP = {
     "usb-good": usbGood,
     "usb-stick": usbStick,
     "usb-warning": usbWarning,
+    "ram-default": ramDefault,
 } as const;
 
 export type IconName = keyof typeof ASSETS_MAP;
