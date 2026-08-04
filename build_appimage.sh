@@ -33,6 +33,9 @@ if [ "$EUID" -eq 0 ]; then
     export XDG_RUNTIME_DIR=/run/user/$(logname -i 2>/dev/null || id -u ${SUDO_USER:-root})
 fi
 
+# Munkakönyvtár átállítása az AppImage gyökerére
+cd "${HERE}"
+
 # Továbbítjuk az összes argumentumot a Node felé ($@)
 exec node "${HERE}/dist/bundle.js" "$@"
 EOF
@@ -43,7 +46,7 @@ echo "=== 4. Kötelező metaadatok (Desktop fájl és ikon hivatkozás) ==="
 cat << 'EOF' > AppDir/hd-sentinel.desktop
 [Desktop Entry]
 Type=Application
-Name=HD Sentinel UI
+Name=HDSentinelUI
 Exec=AppRun
 Icon=hd-sentinel
 Categories=Utility;System;
@@ -61,6 +64,7 @@ else
     echo "HIBA: Egyik ikon sem található a gyökérkönyvtárban!"
     exit 1
 fi
+
 echo "=== 5. AppImage készítő eszköz ellenőrzése / letöltése ==="
 if [ ! -f "appimagetool-x86_64.AppImage" ]; then
     echo "appimagetool nem található, letöltés..."
@@ -70,11 +74,11 @@ fi
 
 echo "=== 6. Csomagolás az appimagetool segítségével ==="
 export ARCH=x86_64
-./appimagetool-x86_64.AppImage AppDir
+./appimagetool-x86_64.AppImage AppDir HDSentinelUI-x86_64.AppImage
 
 echo "=== 7. Fájlok rendszerezése ==="
 mkdir -p built_files
-mv HD_Sentinel_UI-x86_64.AppImage built_files/
+mv HDSentinelUI-x86_64.AppImage built_files/
 
 echo "=== KÉSZ! ==="
 ls -l built_files/
