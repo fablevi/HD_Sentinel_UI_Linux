@@ -1,6 +1,7 @@
-
-/HDSentinel/AppDir
-HDSentinel/appimagetool-x86_64.AppImage
-/_HDSentinel
-/hdsentinel/built_files
-/hdsentinel/AppDir
+node_modules/
+dist/
+*.log
+/AppDir
+/appimagetool-x86_64.AppImage
+/built_files
+/AppDir
