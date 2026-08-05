@@ -12,8 +12,8 @@ import { quit } from "@gtkx/react";
 import {Runner} from "./Runner.js";
 
 export const App = () => {
-    const windowWidth = 960;
-    const windowHeight = 540;
+    const windowWidth = 400; //960;
+    const windowHeight = 300; //540;
 
     const [_isHDSentinelExecutableIsAvailable, _setIsHDSentinelExecutableIsAvailable] = useState<"loading" | "notfound" | "available">("loading");
     const [reloadHDSentinellSearch, setReloadHDSentinellSearch] = useState<boolean>(false);

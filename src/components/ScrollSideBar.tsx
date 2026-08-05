@@ -15,7 +15,8 @@ type ScrollSideBarProps = {
     set_Selected_RamInfo_by_Device: (selected_RamInfo_by_Device: MemoryDevice) => void;
     load_Drive_Window_Type: "Disk" | "Partition" | "Ram";
     set_Load_Drive_Window_Type: (load_Drive_Window_Type: "Disk" | "Partition" | "Ram") => void;
-
+    isSidebarOpen: boolean;
+    setIsSidebarOpen:(isSidebarOpen:boolean)=>void;
 }
 
 export default function ScrollSideBar({
@@ -28,7 +29,9 @@ export default function ScrollSideBar({
                                           selected_RamInfo_by_Device,
                                           set_Selected_RamInfo_by_Device,
                                           load_Drive_Window_Type,
-                                          set_Load_Drive_Window_Type
+                                          set_Load_Drive_Window_Type,
+                                          isSidebarOpen,
+                                          setIsSidebarOpen
                                       }: ScrollSideBarProps) {
 
     const iconSize = 64
@@ -43,14 +46,14 @@ export default function ScrollSideBar({
 
     return (
         <GtkScrolledWindow
-            widthRequest={220}
+            widthRequest={100}
             hscrollbarPolicy={PolicyType.NEVER}
             vscrollbarPolicy={PolicyType.AUTOMATIC}
             vexpand={true}
         >
             <GtkBox
                 orientation={Orientation.VERTICAL}
-                widthRequest={200}
+                widthRequest={80}
                 spacing={3}
                 marginBottom={12}
                 marginTop={12}

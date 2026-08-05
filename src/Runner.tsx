@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage } from "@gtkx/jsx/adw";
-import { quit } from "@gtkx/react";
+import React, {useState, useEffect, useRef} from "react";
+import {AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage} from "@gtkx/jsx/adw";
+import {quit} from "@gtkx/react";
 
 // @ts-ignore
-import { spawn } from "child_process";
+import {spawn} from "child_process";
 // @ts-ignore
 import path from "path";
 // @ts-ignore
-import { fileURLToPath } from "url";
+import {fileURLToPath} from "url";
 import * as console from "node:console";
 import fs from "fs";
 import os from "os";
-import { parseXmlToJson } from "./helper/XMLtoJSON.js";
-import { HDSentinelRoot } from "./models/hdsentinel.model.js";
+import {parseXmlToJson} from "./helper/XMLtoJSON.js";
+import {HDSentinelRoot} from "./models/hdsentinel.model.js";
 import MainComponent from "./components/MainComponent.js";
 import {RamInfo} from "./models/ram.model.js";
 import {parseDmidecodeRam} from "./helper/parseDmidecode.js";
@@ -31,8 +31,8 @@ if (proc?.argv?.includes("--run-hdsentinel-loop")) {
     const runLoop = async () => {
         while (true) {
             try {
-                const { execFileSync } = await import("child_process");
-                const output = execFileSync(userHdsBinary, ["-xml", "-dump"], { encoding: "utf-8" });
+                const {execFileSync} = await import("child_process");
+                const output = execFileSync(userHdsBinary, ["-xml", "-dump"], {encoding: "utf-8"});
                 proc.stdout.write("---HDS_DUMP_START---\n" + output + "\n---HDS_DUMP_END---\n");
             } catch (e: any) {
                 proc.stderr.write(e.message || "Hiba");
@@ -44,8 +44,12 @@ if (proc?.argv?.includes("--run-hdsentinel-loop")) {
 }
 
 export const Runner = () => {
-    const windowWidth = 960;
-    const windowHeight = 540;
+    const windowWidth = 400; //960;
+    const windowHeight = 300; //540;
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
     const [ramData, setRamData] = useState<RamInfo | undefined>();
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
@@ -82,7 +86,7 @@ export const Runner = () => {
         // Gondoskodunk róla, hogy a wrapper kimásolódjon a ~/.cache/hdsentinel/exec/ mappába
         try {
             if (!fs.existsSync(userExecDir)) {
-                fs.mkdirSync(userExecDir, { recursive: true });
+                fs.mkdirSync(userExecDir, {recursive: true});
             }
             if (fs.existsSync(bundleWrapperPath)) {
                 fs.copyFileSync(bundleWrapperPath, userWrapperScript);
@@ -110,17 +114,20 @@ export const Runner = () => {
 
             try {
                 childProc.unref();
-            } catch (e) {}
+            } catch (e) {
+            }
 
             try {
                 console.log(`[GTKX] spawned pkexec pid=${childProc.pid} ppid=${proc.pid}`);
-            } catch (e) {}
+            } catch (e) {
+            }
 
             let buffer = "";
 
             try {
                 childProc.stdout.setEncoding("utf8");
-            } catch (e) {}
+            } catch (e) {
+            }
 
             childProc.stdout.on("data", (chunk: Buffer | string) => {
                 buffer += chunk.toString();
@@ -191,7 +198,8 @@ export const Runner = () => {
             cleanup();
             try {
                 proc.kill(proc.pid, sig);
-            } catch (e) {}
+            } catch (e) {
+            }
         };
 
         proc.on("exit", onExit);
@@ -208,7 +216,8 @@ export const Runner = () => {
                 proc.off("exit", onExit);
                 proc.off("SIGINT", onSig);
                 proc.off("SIGTERM", onSig);
-            } catch (e) {}
+            } catch (e) {
+            }
         };
     }, []);
 
@@ -218,20 +227,26 @@ export const Runner = () => {
 
     if (openMainWindow === "open") {
         return (
-            <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
+            <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth}
+                                  heightRequest={windowHeight} onCloseRequest={handleClose}
+            >
                 <MainComponent
                     hdSentinelDump={hdSentinelDump}
                     ramData={ramData}
                     setTitleString={setTitleString}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
                 />
             </AdwApplicationWindow>
         );
     }
 
     return (
-        <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-            <AdwToolbarView topBar={<AdwHeaderBar />}>
-                <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated" description={`Close the program and reauthenticate`}/>
+        <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight}
+                              onCloseRequest={handleClose}>
+            <AdwToolbarView topBar={<AdwHeaderBar/>}>
+                <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated"
+                               description={`Close the program and reauthenticate`}/>
             </AdwToolbarView>
         </AdwApplicationWindow>
     );

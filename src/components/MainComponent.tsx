@@ -1,4 +1,5 @@
 import {  AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/adw";
+import  * as Gtk from "@gtkx/jsx/gtk"
 import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../models/hdsentinel.model.js";
 import {useEffect, useState} from "react";
 import ScrollSideBar from "./ScrollSideBar.js";
@@ -9,9 +10,11 @@ type MainComponentProps = {
     hdSentinelDump: HDSentinelRoot | undefined
     ramData: RamInfo | undefined;
     setTitleString: (titleString: string) => void
+    isSidebarOpen: boolean;
+    setIsSidebarOpen:(isSidebarOpen:boolean)=>void;
 }
 
-export default function MainComponent({ hdSentinelDump, setTitleString, ramData }:MainComponentProps){
+export default function MainComponent({ hdSentinelDump, setTitleString, ramData, isSidebarOpen, setIsSidebarOpen }:MainComponentProps){
 
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
     const [selected_Partition_Information, set_Selected_Partition_Information] = useState<PartitionDetails | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Partition_Information.Partition[0]);
@@ -30,8 +33,18 @@ export default function MainComponent({ hdSentinelDump, setTitleString, ramData 
 
     return (
         <AdwOverlaySplitView
+            showSidebar={isSidebarOpen}
             sidebar={
-                <AdwToolbarView topBar={<AdwHeaderBar showTitle={true}/>}>
+                <AdwToolbarView topBar={
+                    <AdwHeaderBar showTitle={isSidebarOpen}
+                                  end={isSidebarOpen ? [
+                                      <Gtk.GtkButton
+                                          iconName="go-previous-symbolic"
+                                          onClicked={() => setIsSidebarOpen(!isSidebarOpen)}
+                                      />
+                                  ]: []}
+                    />
+                }>
                     <ScrollSideBar
                         hdSentinelDump={hdSentinelDump}
                         ramData={ramData}
@@ -43,15 +56,27 @@ export default function MainComponent({ hdSentinelDump, setTitleString, ramData 
                         set_Selected_RamInfo_by_Device={set_Selected_RamInfo_by_Device}
                         load_Drive_Window_Type={load_Drive_Window_Type}
                         set_Load_Drive_Window_Type={set_Load_Drive_Window_Type}
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
                     />
                 </AdwToolbarView>
             }
             content={
-            <AdwToolbarView topBar={<AdwHeaderBar showTitle={false}/>}>
+            <AdwToolbarView topBar={<AdwHeaderBar showTitle={!isSidebarOpen}
+                                                  start={!isSidebarOpen ? [
+                                                      <Gtk.GtkButton
+                                                          iconName="go-next-symbolic"
+                                                          onClicked={() => setIsSidebarOpen(!isSidebarOpen)}
+                                                      />
+                                                  ]: []}
+            />}>
                 <DriveContentView
                     selected_Physical_Disk_Information={selected_Physical_Disk_Information}
                     selected_Partition_Information={selected_Partition_Information}
                     load_Drive_Window_Type={load_Drive_Window_Type}
+                    selected_RamInfo_by_Device={selected_RamInfo_by_Device}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
                 />
             </AdwToolbarView>
             }

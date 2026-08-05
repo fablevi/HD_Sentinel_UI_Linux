@@ -51,27 +51,23 @@ interface HDSentinelIconsProps {
 const textureCache = new Map<string, Texture>();
 
 function resolveAssetPath(rawPath: string): string {
-    // 1. URL kódolás dekódolása (%20 -> szóköz)
     let cleanRawPath = decodeURIComponent(rawPath);
 
-    // Ha létezik így közvetlenül
     if (fs.existsSync(cleanRawPath)) {
         return cleanRawPath;
     }
 
-    // Csak a fájlnevet tartjuk meg (pl. sata_default-0-VPJePDsY.png)
     const fileName = path.basename(cleanRawPath);
-
-    // 2. Meghatározzuk a bundle.js könyvtárát (AppImage alatt ez a /tmp/.mount_.../dist)
     const execPath = process.argv[1] ? path.resolve(process.argv[1]) : process.cwd();
     const bundleDir = path.dirname(execPath);
 
-    // Keresési opciók sorrendben:
     const candidates = [
-        path.join(bundleDir, "assets", fileName),            // dist/assets/fájlnév
-        path.join(bundleDir, fileName),                     // dist/fájlnév
-        path.join(process.cwd(), "dist", "assets", fileName),// ./dist/assets/fájlnév
-        path.join(process.cwd(), "assets", fileName),       // ./assets/fájlnév
+        path.join(bundleDir, "assets", fileName),
+        path.join(bundleDir, fileName),
+        path.join(process.cwd(), "dist", "assets", fileName),
+        path.join(process.cwd(), "src", "assets", "png", fileName),
+        path.join(process.cwd(), "assets", "png", fileName),
+        path.join(process.cwd(), cleanRawPath.replace(/^\//, "")),
     ];
 
     for (const candidate of candidates) {
