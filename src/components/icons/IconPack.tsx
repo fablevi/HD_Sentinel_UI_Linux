@@ -21,6 +21,8 @@ import usbGood from "../../assets/png/usb_good-0.png";
 import usbStick from "../../assets/png/usb_stick-0.png";
 import usbWarning from "../../assets/png/usb_warning-0.png";
 import ramDefault from "../../assets/png/ram-default.png";
+import blackFile from "../../assets/png/file_black.png"
+import whiteFile from "../../assets/png/file_white.png"
 
 const ASSETS_MAP = {
     "lan-default": lanDefault,
@@ -39,6 +41,8 @@ const ASSETS_MAP = {
     "usb-stick": usbStick,
     "usb-warning": usbWarning,
     "ram-default": ramDefault,
+    "black-file": blackFile,
+    "white-file": whiteFile,
 } as const;
 
 export type IconName = keyof typeof ASSETS_MAP;

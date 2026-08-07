@@ -2,7 +2,7 @@ import {  AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/ad
 import  * as Gtk from "@gtkx/jsx/gtk"
 import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../models/hdsentinel.model.js";
 import {useEffect, useState} from "react";
-import ScrollSideBar from "./ScrollSideBar.js";
+import ScrollSideBar from "./SideBar/ScrollSideBar.js";
 import DriveContentView from "./DriveContent/DriveContentView.js";
 import {MemoryDevice, RamInfo} from "../models/ram.model.js";
 

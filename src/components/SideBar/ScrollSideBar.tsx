@@ -1,8 +1,8 @@
 import {GtkBox, GtkButton, GtkLabel, GtkScrolledWindow, GtkSeparator} from "@gtkx/jsx/gtk";
-import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../models/hdsentinel.model.js";
+import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../../models/hdsentinel.model.js";
 import {Orientation, Align, PolicyType} from "@gtkx/gi/gtk";
-import HDSentinelIcons from "./icons/HDSentinel.IconPack.js";
-import {MemoryDevice, RamInfo} from "../models/ram.model.js";
+import HDSentinelIcons from "../icons/IconPack.js";
+import {MemoryDevice, RamInfo} from "../../models/ram.model.js";
 
 type ScrollSideBarProps = {
     hdSentinelDump: HDSentinelRoot | undefined;
