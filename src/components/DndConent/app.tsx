@@ -1,29 +1,33 @@
-import React, { useState, useEffect } from "react";
-import { GtkBox, GtkLabel, GtkLinkButton, GtkDropTarget, GtkCenterBox } from "@gtkx/jsx/gtk";
-import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStyleManager } from "@gtkx/jsx/adw";
-import { File } from "@gtkx/gi/gio";
+import React, {useState, useEffect} from "react";
+import {GtkBox, GtkLabel, GtkLinkButton, GtkDropTarget, GtkButton} from "@gtkx/jsx/gtk";
+import {AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStyleManager} from "@gtkx/jsx/adw";
+import {File} from "@gtkx/gi/gio";
 import * as Adw$ from "@gtkx/gi/adw";
 import * as Gtk from "@gtkx/gi/gtk";
 import * as Gdk from "@gtkx/gi/gdk";
 import * as GObject from "@gtkx/gi/gobject";
-//import * as Adw$ from "@gtkx/"
+
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { quit } from "@gtkx/react";
-import {Runner} from "./Runner.js";
-import HDSentinelIcons from "./components/icons/IconPack.js";
+import {quit} from "@gtkx/react";
+import {Runner} from "../ScriptRunnerComponents/Runner.js";
+import HDSentinelIcons from "../icons/IconPack.js";
+import SettingsDialog from "../Settings/SettingsDialog.js";
 
 export const App = () => {
-    const windowWidth = 400; //960;
-    const windowHeight = 300; //540;
+    const windowWidth = 600; //960;
+    const windowHeight = 450; //540;
+
+    const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
 
     const [_isHDSentinelExecutableIsAvailable, _setIsHDSentinelExecutableIsAvailable] = useState<"loading" | "notfound" | "available">("loading");
     const [reloadHDSentinellSearch, setReloadHDSentinellSearch] = useState<boolean>(false);
     const [dropError, setDropError] = useState<string | null>(null);
 
-    Adw$.StyleManager.getDefault().setColorScheme(1)
-    const [appDark, setAppDark] = useState<boolean>(Adw$.StyleManager.getDefault().getDark());
+    const [isAppDark, setIsAppDark] = useState<boolean>(() =>
+        Adw$.StyleManager.getDefault().getDark()
+    );
 
     const targetDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
     const executablePath = path.join(targetDir, "HDSentinel");
@@ -36,15 +40,17 @@ export const App = () => {
         }
     }, [reloadHDSentinellSearch]);
 
-
-  /*  useEffect(() => {
+    useEffect(() => {
         const styleManager = Adw$.StyleManager.getDefault();
-        console.log("Color: ", styleManager.getColorScheme())
-        console.log("availabel colors: ", Adw$.ColorScheme)
-        //Adw$.ColorScheme.FORCE_LIGHT
-        styleManager.setColorScheme(1)
-        console.log("System is dark?: ", styleManager.getDark());
-    }, []);*/
+
+        const signalId = styleManager.connect("notify::dark", () => {
+            setIsAppDark(styleManager.getDark());
+        });
+
+        return () => {
+            styleManager.disconnect(signalId);
+        };
+    }, []);
 
     const handleClose = () => {
         setTimeout(() => {
@@ -52,6 +58,10 @@ export const App = () => {
         }, 200);
         return undefined;
     };
+
+    function closeSettignsDialog() {
+        setSettingsDialogVisibility(false)
+    }
 
     function _reloadHDSentinelSearch() {
         setReloadHDSentinellSearch((prev) => !prev);
@@ -113,7 +123,7 @@ export const App = () => {
             }
 
             if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
+                fs.mkdirSync(targetDir, {recursive: true});
             }
 
             fs.copyFileSync(filePath, executablePath);
@@ -135,8 +145,37 @@ export const App = () => {
 
     if (_isHDSentinelExecutableIsAvailable === "notfound") {
         return (
-            <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight} onCloseRequest={handleClose}>
-                <AdwToolbarView topBar={<AdwHeaderBar />} >
+            <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight}
+                                  onCloseRequest={handleClose}>
+
+                <AdwToolbarView topBar={
+                    <AdwHeaderBar end={
+                        <GtkButton
+                            iconName="settings-configure-symbolic"
+                            onClicked={() => {
+                                setSettingsDialogVisibility(true)
+                            }}
+                        />
+                    }/>
+                }
+                                controllers={[
+                                    <GtkDropTarget
+                                        key="drop-target"
+                                        actions={Gdk.DragAction.COPY}
+                                        types={[GObject.typeFromName("GFile")]}
+                                        preload={true}
+                                        onDrop={(...args: any[]) => handleDrop(...args)}
+                                    />
+                                ]}>
+
+                    {settingsDialogVisibility && (
+                        <SettingsDialog
+                            visibility={settingsDialogVisibility}
+                            contentWidth={windowWidth}
+                            onCloseFn={closeSettignsDialog}
+                        />
+                    )}
+
                     <GtkBox
                         orientation={Gtk.Orientation.VERTICAL}
                         spacing={10}
@@ -152,17 +191,18 @@ export const App = () => {
                         />
 
                         {dropError && (
-                            <GtkLabel label={dropError} cssClasses={["error"]} />
+                            <GtkLabel label={dropError} cssClasses={["error"]}/>
                         )}
 
                         <GtkLinkButton
                             label={"Download HD Sentinel from the link below, extract it, and drop it here."}
                             uri={"https://www.hdsentinel.com/hdslin/hdsentinel-020c-x64.zip"}
                         />
-                        {/*Fix it*/}
-                        <GtkCenterBox marginBottom={10} marginTop={10} marginStart={10} marginEnd={10}>
-                            <HDSentinelIcons name={appDark ? "white-file" : "black-file"} pixelSize={128}/>
-                        </GtkCenterBox>
+
+                        <GtkBox marginBottom={10} marginTop={10} marginStart={10} marginEnd={10}
+                                valign={Gtk.Align.CENTER} halign={Gtk.Align.CENTER}>
+                            <HDSentinelIcons name={isAppDark ? "white-file" : "black-file"} pixelSize={128}/>
+                        </GtkBox>
 
                     </GtkBox>
                 </AdwToolbarView>
@@ -174,15 +214,3 @@ export const App = () => {
         <Runner/>
     )
 };
-
-/*
-controllers={[
-                    <GtkDropTarget
-                        key="drop-target"
-                        actions={Gdk.DragAction.COPY}
-                        types={[GObject.typeFromName("GFile")]}
-                        preload={true}
-                        onDrop={(...args: any[]) => handleDrop(...args)}
-                    />
-                ]}
-* */

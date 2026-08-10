@@ -1,7 +1,7 @@
 import {  AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/adw";
 import  * as Gtk from "@gtkx/jsx/gtk"
 import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../models/hdsentinel.model.js";
-import {useEffect, useState} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import ScrollSideBar from "./SideBar/ScrollSideBar.js";
 import DriveContentView from "./DriveContent/DriveContentView.js";
 import {MemoryDevice, RamInfo} from "../models/ram.model.js";
@@ -12,9 +12,10 @@ type MainComponentProps = {
     setTitleString: (titleString: string) => void
     isSidebarOpen: boolean;
     setIsSidebarOpen:(isSidebarOpen:boolean)=>void;
+    settingsButton: ReactNode
 }
 
-export default function MainComponent({ hdSentinelDump, setTitleString, ramData, isSidebarOpen, setIsSidebarOpen }:MainComponentProps){
+export default function MainComponent({ hdSentinelDump, setTitleString, ramData, isSidebarOpen, setIsSidebarOpen, settingsButton }:MainComponentProps){
 
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
     const [selected_Partition_Information, set_Selected_Partition_Information] = useState<PartitionDetails | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Partition_Information.Partition[0]);
@@ -69,6 +70,7 @@ export default function MainComponent({ hdSentinelDump, setTitleString, ramData,
                                                           onClicked={() => setIsSidebarOpen(!isSidebarOpen)}
                                                       />
                                                   ]: []}
+                                                  end={settingsButton}
             />}>
                 <DriveContentView
                     selected_Physical_Disk_Information={selected_Physical_Disk_Information}

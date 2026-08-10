@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
 import {AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage} from "@gtkx/jsx/adw";
+import {GtkButton} from "@gtkx/jsx/gtk"
 import {quit} from "@gtkx/react";
 
 // @ts-ignore
@@ -11,18 +12,18 @@ import {fileURLToPath} from "url";
 import * as console from "node:console";
 import fs from "fs";
 import os from "os";
-import {parseXmlToJson} from "./helper/XMLtoJSON.js";
-import {HDSentinelRoot} from "./models/hdsentinel.model.js";
-import MainComponent from "./components/MainComponent.js";
-import {RamInfo} from "./models/ram.model.js";
-import {parseDmidecodeRam} from "./helper/parseDmidecode.js";
+import {parseXmlToJson} from "../../helper/XMLtoJSON.js";
+import {HDSentinelRoot} from "../../models/hdsentinel.model.js";
+import MainComponent from "../MainComponent.js";
+import {RamInfo} from "../../models/ram.model.js";
+import {parseDmidecodeRam} from "../../helper/parseDmidecode.js";
+import SettingsDialog from "../Settings/SettingsDialog.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 const proc = (globalThis as any).process;
 
-// Felhasználó cache mappái
 const userExecDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
 const userHdsBinary = path.join(userExecDir, "HDSentinel");
 const userWrapperScript = path.join(userExecDir, "hdsentinel-wrapper.sh");
@@ -44,11 +45,10 @@ if (proc?.argv?.includes("--run-hdsentinel-loop")) {
 }
 
 export const Runner = () => {
-    const windowWidth = 400; //960;
-    const windowHeight = 300; //540;
+    const windowWidth = 600; //960;
+    const windowHeight = 450; //540;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
 
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
     const [ramData, setRamData] = useState<RamInfo | undefined>();
@@ -57,6 +57,12 @@ export const Runner = () => {
 
     const runtimeDir = proc?.env?.XDG_RUNTIME_DIR || `/run/user/${proc.getuid ? proc.getuid() : "1000"}`;
     const ctrlFile = path.join(runtimeDir, "hdsentinel-ctrl");
+
+    const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
+
+    function closeSettignsDialog() {
+        setSettingsDialogVisibility(false)
+    }
 
     const handleClose = () => {
         try {
@@ -80,10 +86,8 @@ export const Runner = () => {
         const xauth = proc?.env?.XAUTHORITY || "";
         const ldLibrary = proc?.env?.LD_LIBRARY_PATH || "";
 
-        // AppImage-en belüli wrapper útvonala
-        const bundleWrapperPath = path.resolve(dirname, "../exec/hdsentinel-wrapper.sh");
+        const bundleWrapperPath = path.resolve(dirname, "../../../exec/hdsentinel-wrapper.sh");
 
-        // Gondoskodunk róla, hogy a wrapper kimásolódjon a ~/.cache/hdsentinel/exec/ mappába
         try {
             if (!fs.existsSync(userExecDir)) {
                 fs.mkdirSync(userExecDir, {recursive: true});
@@ -99,7 +103,6 @@ export const Runner = () => {
         let childProc: any = null;
 
         const startStream = () => {
-            // A pkexec közvetlenül a felhasználó cache mappájában lévő wrapper scriptet futtatja!
             childProc = spawn("pkexec", ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir], {
                 detached: true,
                 stdio: ["ignore", "pipe", "pipe"],
@@ -132,7 +135,6 @@ export const Runner = () => {
             childProc.stdout.on("data", (chunk: Buffer | string) => {
                 buffer += chunk.toString();
 
-                // 1. RAM DMI-decode elcsípése (A wrapper indításakor egyszer fut le)
                 if (buffer.includes("---RAM_DUMP_END---")) {
                     const parts = buffer.split("---RAM_DUMP_END---");
                     const ramBlock = (parts[0] || "").replace("---RAM_DUMP_START---", "").trim();
@@ -145,7 +147,6 @@ export const Runner = () => {
                     }
                 }
 
-                // 2. HDSentinel XML dump elcsípése (Folyamatos ciklus)
                 if (buffer.includes("---HDS_DUMP_END---")) {
                     const parts = buffer.split("---HDS_DUMP_END---");
                     const lastXml = (parts[parts.length - 2] || "").replace("---HDS_DUMP_START---", "").trim();
@@ -230,12 +231,27 @@ export const Runner = () => {
             <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth}
                                   heightRequest={windowHeight} onCloseRequest={handleClose}
             >
+                {settingsDialogVisibility && (
+                    <SettingsDialog
+                        visibility={settingsDialogVisibility}
+                        contentWidth={windowWidth}
+                        onCloseFn={closeSettignsDialog}
+                    />
+                )}
                 <MainComponent
                     hdSentinelDump={hdSentinelDump}
                     ramData={ramData}
                     setTitleString={setTitleString}
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
+                    settingsButton={
+                        <GtkButton
+                            iconName="settings-configure-symbolic"
+                            onClicked={() => {
+                                setSettingsDialogVisibility(true)
+                            }}
+                        />
+                    }
                 />
             </AdwApplicationWindow>
         );
@@ -244,7 +260,21 @@ export const Runner = () => {
     return (
         <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight}
                               onCloseRequest={handleClose}>
-            <AdwToolbarView topBar={<AdwHeaderBar/>}>
+            <AdwToolbarView topBar={<AdwHeaderBar end={
+                <GtkButton
+                    iconName="settings-configure-symbolic"
+                    onClicked={() => {
+                        setSettingsDialogVisibility(true)
+                    }}
+                />
+            }/>}>
+                {settingsDialogVisibility && (
+                    <SettingsDialog
+                        visibility={settingsDialogVisibility}
+                        contentWidth={windowWidth}
+                        onCloseFn={closeSettignsDialog}
+                    />
+                )}
                 <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated"
                                description={`Close the program and reauthenticate`}/>
             </AdwToolbarView>
