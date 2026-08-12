@@ -4,6 +4,7 @@ import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Adw$ from "@gtkx/gi/adw";
 
 import React, { useEffect, useState } from "react";
+import {localConfigStore} from "../../hooks/useLocalConfig.js";
 
 type SettingsDialogType = {
     visibility: boolean;
@@ -73,6 +74,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
                                 selected={appScheme}
                                 onNotifySelected={(value, self) => {
                                     Adw$.StyleManager.getDefault().setColorScheme(value || 0);
+                                    localConfigStore.setSettings({ ...localConfigStore.settings, scheme: value || 0 });
                                 }}
                             />
                         </Adw.AdwPreferencesGroup>

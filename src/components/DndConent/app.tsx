@@ -14,6 +14,7 @@ import {quit} from "@gtkx/react";
 import {Runner} from "../ScriptRunnerComponents/Runner.js";
 import HDSentinelIcons from "../icons/IconPack.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
+import {localConfigStore} from "../../hooks/useLocalConfig.js";
 
 export const App = () => {
     const windowWidth = 600; //960;
@@ -41,6 +42,12 @@ export const App = () => {
     }, [reloadHDSentinellSearch]);
 
     useEffect(() => {
+        console.log(localConfigStore.settings);
+        console.log("Load default settings!");
+        _loadDefaultSettings();
+    }, []);
+
+    useEffect(() => {
         const styleManager = Adw$.StyleManager.getDefault();
 
         const signalId = styleManager.connect("notify::dark", () => {
@@ -51,6 +58,10 @@ export const App = () => {
             styleManager.disconnect(signalId);
         };
     }, []);
+
+    const _loadDefaultSettings  = () => {
+        Adw$.StyleManager.getDefault().setColorScheme(localConfigStore.settings.scheme);
+    }
 
     const handleClose = () => {
         setTimeout(() => {
