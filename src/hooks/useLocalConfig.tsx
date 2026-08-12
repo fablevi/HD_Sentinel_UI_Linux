@@ -3,9 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { EventEmitter } from "events";
+import {languageType} from "../components/Languages/language.model.js";
 
 type Settings = {
-  scheme: number
+  scheme: number,
+  language: languageType,
   [key: string]: any;
 };
 
@@ -17,6 +19,7 @@ const MEASURE_PATH = path.join(CONFIG_DIR, "measure.json");
 
 const DEFAULT_SETTINGS: Settings = {
   scheme: 0,
+  language: "en"
 };
 
 const DEFAULT_MEASURE: Measure = {};

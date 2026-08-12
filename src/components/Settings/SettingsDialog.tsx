@@ -5,6 +5,8 @@ import * as Adw$ from "@gtkx/gi/adw";
 
 import React, { useEffect, useState } from "react";
 import {localConfigStore} from "../../hooks/useLocalConfig.js";
+import {LANGUAGE_OPTIONS, languageType} from "../Languages/language.model.js";
+import {useTranslation} from "../Languages/useTranslation.js";
 
 type SettingsDialogType = {
     visibility: boolean;
@@ -13,6 +15,8 @@ type SettingsDialogType = {
 };
 
 export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: SettingsDialogType) {
+
+    const { TEXT } = useTranslation();
 
     const [appScheme, setAppScheme] = useState<Adw$.ColorScheme>(() =>
         Adw$.StyleManager.getDefault().getColorScheme()
@@ -41,7 +45,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
                 topBar={
                     <Adw.AdwHeaderBar
                         titleWidget={
-                            <Adw.AdwWindowTitle title="Beállítások" />
+                            <Adw.AdwWindowTitle title={TEXT.settings.title} />
                         }
                     />
                 }
@@ -64,10 +68,10 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
                             marginStart={20}
                             marginEnd={20}
                             marginTop={20}
-                            title={"Style"}
+                            title={TEXT.settings.styleGroupTitle}
                         >
                             <Adw.AdwComboRow
-                                title={"App scheme style"}
+                                title={TEXT.settings.appSchemeStyle}
                                 model={Gtk$.StringList.new( Object.keys(Adw$.ColorScheme).filter(
                                     (key) => isNaN(Number(key))
                                 ))}
@@ -82,11 +86,19 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
                             marginStart={20}
                             marginEnd={20}
                             marginTop={20}
-                            title={"Languages"}
+                            title={TEXT.settings.languagesGroupTitle}
                         >
                             <Adw.AdwComboRow
-                                title={"Language"}
-
+                                title={TEXT.settings.language}
+                                model={Gtk$.StringList.new(LANGUAGE_OPTIONS)}
+                                selected={LANGUAGE_OPTIONS.indexOf(localConfigStore.getSettings().language || "en")}
+                                onNotifySelected={(selectedIndex, self) => {
+                                    const selectedLang = LANGUAGE_OPTIONS[selectedIndex ?? 0] || "en";
+                                    localConfigStore.setSettings({
+                                        ...localConfigStore.settings,
+                                        language: selectedLang
+                                    });
+                                }}
                             />
                         </Adw.AdwPreferencesGroup>
                     </Gtk.GtkBox>
