@@ -5,3 +5,6 @@ dist/
 /appimagetool-x86_64.AppImage
 /built_files
 /AppDir
+/repo
+*.flatpak
+/.idea

@@ -14,4 +14,16 @@ export type uiTextType = {
         save: string;
         cancel: string;
     };
+    ram: {
+        size: string;
+        type: string;
+        speed: string;
+        memoryTechnology: string;
+        formFactor: string;
+        partNumber: string;
+        configuredMemorySpeed: string;
+        minimumVoltage: string;
+        maximumVoltage: string;
+        configuredVoltage: string;
+    };
 };

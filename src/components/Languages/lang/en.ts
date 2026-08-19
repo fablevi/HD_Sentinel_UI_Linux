@@ -12,5 +12,17 @@ export const en: uiTextType = {
         close: "Close",
         save: "Save",
         cancel: "Cancel"
+    },
+    ram: {
+        size: "Size",
+        type: "Type",
+        speed: "Speed",
+        memoryTechnology: "Memory Technology",
+        formFactor: "Form Factor",
+        partNumber: "Part Number",
+        configuredMemorySpeed: "Configured Memory Speed",
+        minimumVoltage: "Minimum Voltage",
+        maximumVoltage: "Maximum Voltage",
+        configuredVoltage: "Configured Voltage"
     }
 };

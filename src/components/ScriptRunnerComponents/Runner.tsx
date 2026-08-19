@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
 import {AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage} from "@gtkx/jsx/adw";
-import {GtkButton} from "@gtkx/jsx/gtk"
+import {GtkButton} from "@gtkx/jsx/gtk";
 import {quit} from "@gtkx/react";
 
 // @ts-ignore
@@ -45,8 +45,8 @@ if (proc?.argv?.includes("--run-hdsentinel-loop")) {
 }
 
 export const Runner = () => {
-    const windowWidth = 600; //960;
-    const windowHeight = 450; //540;
+    const windowWidth = 600;
+    const windowHeight = 450;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -60,23 +60,53 @@ export const Runner = () => {
 
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
 
+    const childProcRef = useRef<any>(null);
+
     function closeSettignsDialog() {
-        setSettingsDialogVisibility(false)
+        setSettingsDialogVisibility(false);
     }
 
-    const handleClose = () => {
+    const killChildProcess = () => {
         try {
             if (fs.existsSync(ctrlFile)) {
                 fs.unlinkSync(ctrlFile);
-                console.log("[GTKX] ctrl file rsetRamDataemoved by GUI:", ctrlFile);
+                console.log("[GTKX] ctrl file removed for process termination:", ctrlFile);
             }
         } catch (e) {
             console.error("[GTKX] Failed to remove ctrl file:", e);
         }
 
+        const isFlatpak = fs.existsSync("/.flatpak-info");
+        if (isFlatpak) {
+            try {
+                console.log("[GTKX] Sending pkill to host via flatpak-spawn...");
+                spawn("flatpak-spawn", ["--host", "pkill", "-f", "hdsentinel-wrapper.sh"]);
+            } catch (e) {
+                console.error("[GTKX] Failed to send pkill via flatpak-spawn:", e);
+            }
+        }
+
+        if (childProcRef.current) {
+            try {
+                console.log("[GTKX] Terminating local child process...");
+                childProcRef.current.kill("SIGTERM");
+                childProcRef.current = null;
+            } catch (e) {
+                console.error("[GTKX] Failed to terminate local child process:", e);
+            }
+        }
+    };
+
+    const handleClose = () => {
+        killChildProcess();
+
         setTimeout(() => {
-            quit();
-        }, 200);
+            try {
+                quit();
+            } catch (e) {
+                if (proc?.exit) proc.exit(0);
+            }
+        }, 150);
 
         return undefined;
     };
@@ -86,24 +116,80 @@ export const Runner = () => {
         const xauth = proc?.env?.XAUTHORITY || "";
         const ldLibrary = proc?.env?.LD_LIBRARY_PATH || "";
 
-        const bundleWrapperPath = path.resolve(dirname, "../../../exec/hdsentinel-wrapper.sh");
+        const appDir = proc?.env?.APPDIR;
+        
+        let bundleWrapperPath = path.resolve(dirname, "../../../exec/hdsentinel-wrapper.sh");
+        let bundleHdsPath = path.resolve(dirname, "../../../exec/HDSentinel");
 
-        try {
-            if (!fs.existsSync(userExecDir)) {
-                fs.mkdirSync(userExecDir, {recursive: true});
+        if (appDir) {
+            bundleWrapperPath = path.join(appDir, "usr", "bin", "exec", "hdsentinel-wrapper.sh");
+            if (!fs.existsSync(bundleWrapperPath)) {
+                bundleWrapperPath = path.join(appDir, "exec", "hdsentinel-wrapper.sh");
             }
-            if (fs.existsSync(bundleWrapperPath)) {
-                fs.copyFileSync(bundleWrapperPath, userWrapperScript);
-                fs.chmodSync(userWrapperScript, 0o755);
+
+            bundleHdsPath = path.join(appDir, "usr", "bin", "exec", "HDSentinel");
+            if (!fs.existsSync(bundleHdsPath)) {
+                bundleHdsPath = path.join(appDir, "exec", "HDSentinel");
             }
-        } catch (e) {
-            console.error("[GTKX] Failed to sync wrapper script to user cache:", e);
         }
 
-        let childProc: any = null;
+        const setupFilesAndStart = async () => {
+            try {
+                if (!fs.existsSync(userExecDir)) {
+                    fs.mkdirSync(userExecDir, {recursive: true});
+                }
+
+                // 1. Megpróbáljuk felmásolni a helyi csomagból
+                if (fs.existsSync(bundleWrapperPath)) {
+                    fs.copyFileSync(bundleWrapperPath, userWrapperScript);
+                    fs.chmodSync(userWrapperScript, 0o755);
+                    console.log("[GTKX] Wrapper script synced from bundle to:", userWrapperScript);
+                } 
+                // 2. Ha helyileg nem található meg (pl. Flatpak miatt), letöltjük GitHub-ról
+                else if (!fs.existsSync(userWrapperScript)) {
+                    console.warn("[GTKX] Wrapper not found locally. Downloading from GitHub...");
+                    const rawUrl = "https://raw.githubusercontent.com/fablevi/HD_Sentinel_UI_Linux/main/exec/hdsentinel-wrapper.sh";
+                    const res = await fetch(rawUrl);
+                    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+                    const text = await res.text();
+                    fs.writeFileSync(userWrapperScript, text, {encoding: "utf8"});
+                    fs.chmodSync(userWrapperScript, 0o755);
+                    console.log("[GTKX] Wrapper script downloaded from GitHub!");
+                }
+
+                // HDSentinel bináris másolása (ha elérhető a csomagban)
+                if (fs.existsSync(bundleHdsPath) && !fs.existsSync(userHdsBinary)) {
+                    fs.copyFileSync(bundleHdsPath, userHdsBinary);
+                    fs.chmodSync(userHdsBinary, 0o755);
+                }
+            } catch (e) {
+                console.error("[GTKX] File setup / download error:", e);
+            }
+
+            startStream();
+        };
 
         const startStream = () => {
-            childProc = spawn("pkexec", ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir], {
+            if (!fs.existsSync(userWrapperScript)) {
+                console.error("[GTKX ERROR] Cannot spawn: wrapper script missing from cache:", userWrapperScript);
+                setOpenMainWindow("error");
+                return;
+            }
+
+            const isFlatpak = fs.existsSync("/.flatpak-info");
+            const scriptArgs = ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir];
+
+            let command = "pkexec";
+            let spawnArgs = scriptArgs;
+
+            if (isFlatpak) {
+                command = "flatpak-spawn";
+                spawnArgs = ["--host", "--directory=/", "pkexec", ...scriptArgs];
+            }
+
+            console.log(`[GTKX] Spawning via ${command} (isFlatpak: ${isFlatpak})...`);
+
+            const childProc = spawn(command, spawnArgs, {
                 detached: true,
                 stdio: ["ignore", "pipe", "pipe"],
                 env: {
@@ -115,22 +201,17 @@ export const Runner = () => {
                 },
             });
 
-            try {
-                childProc.unref();
-            } catch (e) {
-            }
+            childProcRef.current = childProc;
 
             try {
-                console.log(`[GTKX] spawned pkexec pid=${childProc.pid} ppid=${proc.pid}`);
-            } catch (e) {
-            }
+                childProc.unref();
+            } catch (e) {}
 
             let buffer = "";
 
             try {
                 childProc.stdout.setEncoding("utf8");
-            } catch (e) {
-            }
+            } catch (e) {}
 
             childProc.stdout.on("data", (chunk: Buffer | string) => {
                 buffer += chunk.toString();
@@ -169,7 +250,7 @@ export const Runner = () => {
             });
 
             childProc.on("exit", (code: number, signal: string) => {
-                console.warn(`[GTKX] pkexec/wrapper exited pid=${childProc?.pid} code=${code} signal=${signal}`);
+                console.warn(`[GTKX] process exited pid=${childProc?.pid} code=${code} signal=${signal}`);
                 if (code !== 0) {
                     setOpenMainWindow("error");
                 }
@@ -181,17 +262,10 @@ export const Runner = () => {
             });
         };
 
-        startStream();
+        setupFilesAndStart();
 
         const cleanup = () => {
-            try {
-                if (fs.existsSync(ctrlFile)) {
-                    fs.unlinkSync(ctrlFile);
-                    console.log("[GTKX] ctrl file removed in cleanup:", ctrlFile);
-                }
-            } catch (e) {
-                console.error("[GTKX] cleanup failed to remove ctrl file:", e);
-            }
+            killChildProcess();
         };
 
         const onExit = () => cleanup();
@@ -199,8 +273,7 @@ export const Runner = () => {
             cleanup();
             try {
                 proc.kill(proc.pid, sig);
-            } catch (e) {
-            }
+            } catch (e) {}
         };
 
         proc.on("exit", onExit);
@@ -217,8 +290,7 @@ export const Runner = () => {
                 proc.off("exit", onExit);
                 proc.off("SIGINT", onSig);
                 proc.off("SIGTERM", onSig);
-            } catch (e) {
-            }
+            } catch (e) {}
         };
     }, []);
 
@@ -248,7 +320,7 @@ export const Runner = () => {
                         <GtkButton
                             iconName="settings-configure-symbolic"
                             onClicked={() => {
-                                setSettingsDialogVisibility(true)
+                                setSettingsDialogVisibility(true);
                             }}
                         />
                     }
@@ -264,7 +336,7 @@ export const Runner = () => {
                 <GtkButton
                     iconName="settings-configure-symbolic"
                     onClicked={() => {
-                        setSettingsDialogVisibility(true)
+                        setSettingsDialogVisibility(true);
                     }}
                 />
             }/>}>
