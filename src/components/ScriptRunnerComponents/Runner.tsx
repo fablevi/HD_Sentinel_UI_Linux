@@ -1,22 +1,28 @@
-import React, {useState, useEffect, useRef} from "react";
-import {AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStatusPage} from "@gtkx/jsx/adw";
-import {GtkButton} from "@gtkx/jsx/gtk";
-import {quit} from "@gtkx/react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+    AdwApplicationWindow,
+    AdwHeaderBar,
+    AdwToolbarView,
+    AdwStatusPage
+} from "@gtkx/jsx/adw";
+import { GtkButton } from "@gtkx/jsx/gtk";
+import { quit } from "@gtkx/react";
 
 // @ts-ignore
-import {spawn} from "child_process";
+import { spawn } from "child_process";
 // @ts-ignore
 import path from "path";
 // @ts-ignore
-import {fileURLToPath} from "url";
+import { fileURLToPath } from "url";
 import * as console from "node:console";
 import fs from "fs";
 import os from "os";
-import {parseXmlToJson} from "../../helper/XMLtoJSON.js";
-import {HDSentinelRoot} from "../../models/hdsentinel.model.js";
+
+import { parseXmlToJson } from "../../helper/XMLtoJSON.js";
+import { HDSentinelRoot } from "../../models/hdsentinel.model.js";
 import MainComponent from "../MainComponent.js";
-import {RamInfo} from "../../models/ram.model.js";
-import {parseDmidecodeRam} from "../../helper/parseDmidecode.js";
+import { RamInfo } from "../../models/ram.model.js";
+import { parseDmidecodeRam } from "../../helper/parseDmidecode.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
 
 const filename = fileURLToPath(import.meta.url);
@@ -28,41 +34,23 @@ const userExecDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
 const userHdsBinary = path.join(userExecDir, "HDSentinel");
 const userWrapperScript = path.join(userExecDir, "hdsentinel-wrapper.sh");
 
-if (proc?.argv?.includes("--run-hdsentinel-loop")) {
-    const runLoop = async () => {
-        while (true) {
-            try {
-                const {execFileSync} = await import("child_process");
-                const output = execFileSync(userHdsBinary, ["-xml", "-dump"], {encoding: "utf-8"});
-                proc.stdout.write("---HDS_DUMP_START---\n" + output + "\n---HDS_DUMP_END---\n");
-            } catch (e: any) {
-                proc.stderr.write(e.message || "Hiba");
-            }
-            await new Promise((res) => setTimeout(res, 1000));
-        }
-    };
-    runLoop();
-}
-
 export const Runner = () => {
     const windowWidth = 600;
     const windowHeight = 450;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
     const [ramData, setRamData] = useState<RamInfo | undefined>();
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
     const [titleString, setTitleString] = useState<string>("");
+    const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
 
     const runtimeDir = proc?.env?.XDG_RUNTIME_DIR || `/run/user/${proc.getuid ? proc.getuid() : "1000"}`;
     const ctrlFile = path.join(runtimeDir, "hdsentinel-ctrl");
 
-    const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
-
     const childProcRef = useRef<any>(null);
 
-    function closeSettignsDialog() {
+    function closeSettingsDialog() {
         setSettingsDialogVisibility(false);
     }
 
@@ -76,23 +64,12 @@ export const Runner = () => {
             console.error("[GTKX] Failed to remove ctrl file:", e);
         }
 
-        const isFlatpak = fs.existsSync("/.flatpak-info");
-        if (isFlatpak) {
-            try {
-                console.log("[GTKX] Sending pkill to host via flatpak-spawn...");
-                spawn("flatpak-spawn", ["--host", "pkill", "-f", "hdsentinel-wrapper.sh"]);
-            } catch (e) {
-                console.error("[GTKX] Failed to send pkill via flatpak-spawn:", e);
-            }
-        }
-
         if (childProcRef.current) {
             try {
-                console.log("[GTKX] Terminating local child process...");
                 childProcRef.current.kill("SIGTERM");
                 childProcRef.current = null;
             } catch (e) {
-                console.error("[GTKX] Failed to terminate local child process:", e);
+                console.error("[GTKX] Failed to terminate child process:", e);
             }
         }
     };
@@ -115,9 +92,8 @@ export const Runner = () => {
         const display = proc?.env?.DISPLAY || ":0";
         const xauth = proc?.env?.XAUTHORITY || "";
         const ldLibrary = proc?.env?.LD_LIBRARY_PATH || "";
-
         const appDir = proc?.env?.APPDIR;
-        
+
         let bundleWrapperPath = path.resolve(dirname, "../../../exec/hdsentinel-wrapper.sh");
         let bundleHdsPath = path.resolve(dirname, "../../../exec/HDSentinel");
 
@@ -136,28 +112,24 @@ export const Runner = () => {
         const setupFilesAndStart = async () => {
             try {
                 if (!fs.existsSync(userExecDir)) {
-                    fs.mkdirSync(userExecDir, {recursive: true});
+                    fs.mkdirSync(userExecDir, { recursive: true });
                 }
 
-                // 1. Megpróbáljuk felmásolni a helyi csomagból
                 if (fs.existsSync(bundleWrapperPath)) {
                     fs.copyFileSync(bundleWrapperPath, userWrapperScript);
                     fs.chmodSync(userWrapperScript, 0o755);
                     console.log("[GTKX] Wrapper script synced from bundle to:", userWrapperScript);
-                } 
-                // 2. Ha helyileg nem található meg (pl. Flatpak miatt), letöltjük GitHub-ról
-                else if (!fs.existsSync(userWrapperScript)) {
+                } else if (!fs.existsSync(userWrapperScript)) {
                     console.warn("[GTKX] Wrapper not found locally. Downloading from GitHub...");
                     const rawUrl = "https://raw.githubusercontent.com/fablevi/HD_Sentinel_UI_Linux/main/exec/hdsentinel-wrapper.sh";
                     const res = await fetch(rawUrl);
                     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
                     const text = await res.text();
-                    fs.writeFileSync(userWrapperScript, text, {encoding: "utf8"});
+                    fs.writeFileSync(userWrapperScript, text, { encoding: "utf8" });
                     fs.chmodSync(userWrapperScript, 0o755);
                     console.log("[GTKX] Wrapper script downloaded from GitHub!");
                 }
 
-                // HDSentinel bináris másolása (ha elérhető a csomagban)
                 if (fs.existsSync(bundleHdsPath) && !fs.existsSync(userHdsBinary)) {
                     fs.copyFileSync(bundleHdsPath, userHdsBinary);
                     fs.chmodSync(userHdsBinary, 0o755);
@@ -176,20 +148,19 @@ export const Runner = () => {
                 return;
             }
 
-            const isFlatpak = fs.existsSync("/.flatpak-info");
-            const scriptArgs = ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir];
-
-            let command = "pkexec";
-            let spawnArgs = scriptArgs;
-
-            if (isFlatpak) {
-                command = "flatpak-spawn";
-                spawnArgs = ["--host", "--directory=/", "pkexec", ...scriptArgs];
+            try {
+                if (!fs.existsSync(ctrlFile)) {
+                    fs.writeFileSync(ctrlFile, "running");
+                }
+            } catch (e) {
+                console.error("[GTKX] Failed to create ctrl file:", e);
             }
 
-            console.log(`[GTKX] Spawning via ${command} (isFlatpak: ${isFlatpak})...`);
+            const scriptArgs = ["/bin/sh", userWrapperScript, userHdsBinary, runtimeDir];
 
-            const childProc = spawn(command, spawnArgs, {
+            console.log("[GTKX] Spawning via pkexec...");
+
+            const childProc = spawn("pkexec", scriptArgs, {
                 detached: true,
                 stdio: ["ignore", "pipe", "pipe"],
                 env: {
@@ -251,7 +222,7 @@ export const Runner = () => {
 
             childProc.on("exit", (code: number, signal: string) => {
                 console.warn(`[GTKX] process exited pid=${childProc?.pid} code=${code} signal=${signal}`);
-                if (code !== 0) {
+                if (code !== 0 && code !== null) {
                     setOpenMainWindow("error");
                 }
             });
@@ -300,14 +271,17 @@ export const Runner = () => {
 
     if (openMainWindow === "open") {
         return (
-            <AdwApplicationWindow title={titleString || "HD Sentinel"} widthRequest={windowWidth}
-                                  heightRequest={windowHeight} onCloseRequest={handleClose}
+            <AdwApplicationWindow
+                title={titleString || "HD Sentinel"}
+                widthRequest={windowWidth}
+                heightRequest={windowHeight}
+                onCloseRequest={handleClose}
             >
                 {settingsDialogVisibility && (
                     <SettingsDialog
                         visibility={settingsDialogVisibility}
                         contentWidth={windowWidth}
-                        onCloseFn={closeSettignsDialog}
+                        onCloseFn={closeSettingsDialog}
                     />
                 )}
                 <MainComponent
@@ -330,25 +304,38 @@ export const Runner = () => {
     }
 
     return (
-        <AdwApplicationWindow title={"HD Sentinel"} widthRequest={windowWidth} heightRequest={windowHeight}
-                              onCloseRequest={handleClose}>
-            <AdwToolbarView topBar={<AdwHeaderBar end={
-                <GtkButton
-                    iconName="settings-configure-symbolic"
-                    onClicked={() => {
-                        setSettingsDialogVisibility(true);
-                    }}
-                />
-            }/>}>
+        <AdwApplicationWindow
+            title={"HD Sentinel"}
+            widthRequest={windowWidth}
+            heightRequest={windowHeight}
+            onCloseRequest={handleClose}
+        >
+            <AdwToolbarView
+                topBar={
+                    <AdwHeaderBar
+                        end={
+                            <GtkButton
+                                iconName="settings-configure-symbolic"
+                                onClicked={() => {
+                                    setSettingsDialogVisibility(true);
+                                }}
+                            />
+                        }
+                    />
+                }
+            >
                 {settingsDialogVisibility && (
                     <SettingsDialog
                         visibility={settingsDialogVisibility}
                         contentWidth={windowWidth}
-                        onCloseFn={closeSettignsDialog}
+                        onCloseFn={closeSettingsDialog}
                     />
                 )}
-                <AdwStatusPage iconName="dialog-error-symbolic" title="User not authenticated"
-                               description={`Close the program and reauthenticate`}/>
+                <AdwStatusPage
+                    iconName="dialog-error-symbolic"
+                    title="User not authenticated"
+                    description={`Close the program and reauthenticate`}
+                />
             </AdwToolbarView>
         </AdwApplicationWindow>
     );
