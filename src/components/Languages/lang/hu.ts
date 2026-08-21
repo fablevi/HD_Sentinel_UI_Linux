@@ -40,5 +40,17 @@ export const hu: uiTextType = {
         noSmartDescription: "Ez a meghajtó nem támogatja a S.M.A.R.T. funkciókat, vagy az adatok nem olvashatók ki.",
         value: "Érték",
         threshold: "Küszöb"
+    },
+    notFound: {
+        errorTitle: "Hiba: A HDSentinel nem található!",
+        downloadLink: "Töltsd le a HD Sentinelt az alábbi linkről, csomagold ki, majd húzd ide a fájlt.",
+        invalidFile: "A bedobott elem nem érvényes fájl!",
+        wrongFileName: 'Hibás fájl! A fájl neve "HDSentinel" kell legyen.',
+        copyFailed: "Sikertelen fájlmásolás!"
+    },
+    runner: {
+        errorTitle: "Sikertelen azonosítás",
+        errorDescription: "Kattints az alábbi gombra az újrahitelesítéshez!",
+        reauthenticate: "Újrahitelesítés"
     }
 };

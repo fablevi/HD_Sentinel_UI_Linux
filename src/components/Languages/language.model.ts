@@ -42,4 +42,16 @@ export type uiTextType = {
         value: string;
         threshold: string;
     };
+    notFound: {
+        errorTitle: string;
+        downloadLink: string;
+        invalidFile: string;
+        wrongFileName: string;
+        copyFailed: string;
+    };
+    runner: {
+        errorTitle: string;
+        errorDescription: string;
+        reauthenticate: string;
+    };
 };

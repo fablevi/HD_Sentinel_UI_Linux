@@ -12,10 +12,8 @@ type SMARTViewProps = {
 export default function SMARTView({ selected_Physical_Disk_Information }: SMARTViewProps) {
     const { TEXT } = useTranslation();
 
-    // Kinyerjük a S.M.A.R.T. attribútumok tömbjét
     const smartAttributes = selected_Physical_Disk_Information?.["S.M.A.R.T."]?.Attribute || [];
 
-    // Ha nincs S.M.A.R.T. adat (pl. USB Flash Drive esetén)
     if (smartAttributes.length === 0) {
         return (
             <Gtk.GtkBox hexpand={true} vexpand={true} halign={Gtk$.Align.CENTER} valign={Gtk$.Align.CENTER}>

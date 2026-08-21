@@ -40,5 +40,17 @@ export const en: uiTextType = {
         noSmartDescription: "This drive does not support S.M.A.R.T. features or the data cannot be retrieved.",
         value: "Value",
         threshold: "Threshold"
+    },
+    notFound: {
+        errorTitle: "Error: HDSentinel not found!",
+        downloadLink: "Download HD Sentinel from the link below, extract it, and drop it here.",
+        invalidFile: "The dropped item is not a valid file!",
+        wrongFileName: 'Invalid file! The file name must be "HDSentinel".',
+        copyFailed: "Failed to copy file!"
+    },
+    runner: {
+        errorTitle: "User not authenticated",
+        errorDescription: "Click the button below to reauthenticate!",
+        reauthenticate: "Reauthenticate"
     }
 };

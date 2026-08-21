@@ -6,12 +6,14 @@ import * as Gtk$ from "@gtkx/gi/gtk";
 
 import NotRemoveableDriveView from "./NotRemoveableDriveView.js";
 import SMARTView from "./SMARTView.js";
+import { useTranslation } from "../../../Languages/useTranslation.js";
 
 type TabulatedViewProps = {
     selected_Physical_Disk_Information: PhysicalDiskInformation | undefined;
 };
 
 export default function TabulatedView({ selected_Physical_Disk_Information }: TabulatedViewProps) {
+    const { TEXT } = useTranslation();
     const [activeTab, setActiveTab] = useState<"drive_info" | "smart_info">("drive_info");
 
     return (
@@ -25,7 +27,7 @@ export default function TabulatedView({ selected_Physical_Disk_Information }: Ta
                 marginEnd={15}
             >
                 <Gtk.GtkButton
-                    label="Meghajtó infó"
+                    label={TEXT.disk.tabDriveInfo}
                     iconName="drive-harddisk-symbolic"
                     cssClasses={activeTab === "drive_info" ? ["suggested-action"] : ["flat"]}
                     onClicked={() => setActiveTab("drive_info")}
@@ -33,7 +35,7 @@ export default function TabulatedView({ selected_Physical_Disk_Information }: Ta
                 />
 
                 <Gtk.GtkButton
-                    label="S.M.A.R.T."
+                    label={TEXT.disk.tabSmart}
                     iconName="utilities-system-monitor-symbolic"
                     cssClasses={activeTab === "smart_info" ? ["suggested-action"] : ["flat"]}
                     onClicked={() => setActiveTab("smart_info")}

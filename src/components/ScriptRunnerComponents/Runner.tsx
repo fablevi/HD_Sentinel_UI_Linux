@@ -5,7 +5,8 @@ import {
     AdwToolbarView,
     AdwStatusPage
 } from "@gtkx/jsx/adw";
-import { GtkButton } from "@gtkx/jsx/gtk";
+import { GtkButton, GtkBox } from "@gtkx/jsx/gtk";
+import * as Gtk$ from "@gtkx/gi/gtk";
 import { quit } from "@gtkx/react";
 
 // @ts-ignore
@@ -24,6 +25,7 @@ import MainComponent from "../MainComponent.js";
 import { RamInfo } from "../../models/ram.model.js";
 import { parseDmidecodeRam } from "../../helper/parseDmidecode.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
+import { useTranslation } from "../Languages/useTranslation.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -34,7 +36,13 @@ const userExecDir = path.join(os.homedir(), ".cache", "hdsentinel", "exec");
 const userHdsBinary = path.join(userExecDir, "HDSentinel");
 const userWrapperScript = path.join(userExecDir, "hdsentinel-wrapper.sh");
 
-export const Runner = () => {
+type RunnerProps = {
+    setResetApp: (reset: boolean) => void;
+};
+
+export const Runner = ({ setResetApp }: RunnerProps) => {
+    const { TEXT } = useTranslation();
+
     const windowWidth = 600;
     const windowHeight = 450;
 
@@ -176,13 +184,13 @@ export const Runner = () => {
 
             try {
                 childProc.unref();
-            } catch (e) {}
+            } catch (e) { }
 
             let buffer = "";
 
             try {
                 childProc.stdout.setEncoding("utf8");
-            } catch (e) {}
+            } catch (e) { }
 
             childProc.stdout.on("data", (chunk: Buffer | string) => {
                 buffer += chunk.toString();
@@ -244,7 +252,7 @@ export const Runner = () => {
             cleanup();
             try {
                 proc.kill(proc.pid, sig);
-            } catch (e) {}
+            } catch (e) { }
         };
 
         proc.on("exit", onExit);
@@ -261,7 +269,7 @@ export const Runner = () => {
                 proc.off("exit", onExit);
                 proc.off("SIGINT", onSig);
                 proc.off("SIGTERM", onSig);
-            } catch (e) {}
+            } catch (e) { }
         };
     }, []);
 
@@ -331,11 +339,27 @@ export const Runner = () => {
                         onCloseFn={closeSettingsDialog}
                     />
                 )}
-                <AdwStatusPage
-                    iconName="dialog-error-symbolic"
-                    title="User not authenticated"
-                    description={`Close the program and reauthenticate`}
-                />
+                <GtkBox
+                    orientation={Gtk$.Orientation.VERTICAL}
+                    valign={Gtk$.Align.CENTER}
+                >
+                    <AdwStatusPage
+                        iconName="dialog-error-symbolic"
+                        title={TEXT.runner.errorTitle}
+                        description={TEXT.runner.errorDescription}
+                    />
+                    <GtkBox halign={Gtk$.Align.CENTER}>
+                        <GtkButton
+                            label={TEXT.runner.reauthenticate}
+                            iconName="view-refresh-symbolic"
+                            cssClasses={["suggested-action", "pill"]}
+                            widthRequest={100} 
+                            onClicked={() => {
+                                setResetApp(false);
+                            }}
+                        />
+                    </GtkBox>
+                </GtkBox>
             </AdwToolbarView>
         </AdwApplicationWindow>
     );
