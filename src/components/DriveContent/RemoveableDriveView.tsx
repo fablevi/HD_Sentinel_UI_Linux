@@ -52,7 +52,9 @@ export default function RemoveableDriveView({ selected_Physical_Disk_Information
                         />
                     </Gtk.GtkBox>
                 </Adw.AdwActionRow>
-                <ActionRow
+            </Adw.AdwPreferencesGroup>
+            <Adw.AdwPreferencesGroup  hexpand={true} marginBottom={gtkBoxMargin}>
+                   <ActionRow
                     subtitle="Current Temperature"
                     title={`${getTemperatureValue(selected_Physical_Disk_Information?.Hard_Disk_Summary.Current_Temperature, "celsius")} °C`}
                 />
@@ -62,25 +64,36 @@ export default function RemoveableDriveView({ selected_Physical_Disk_Information
                 />
             </Adw.AdwPreferencesGroup>
             <Adw.AdwPreferencesGroup hexpand={true} marginBottom={gtkBoxMargin}>
-                <Adw.AdwActionRow>
+                <Adw.AdwActionRow >
                     <Gtk.GtkLabel
                         label={selected_Physical_Disk_Information?.Hard_Disk_Summary.Description || ""}
                         wrap={true}
                         selectable={true}
-                        xalign={0} // Balra igazítás
-                        cssClasses={["dim-label"]} // Letiltott/szürkített megjelenéshez
+                        xalign={0}
+                        cssClasses={["dim-label"]}
+                        marginBottom={10}
+                        marginEnd={10}
+                        marginStart={10}
+                        marginTop={10}
+                        widthChars={25}       
+                        maxWidthChars={25}     
+                        naturalWrapMode={Gtk$.NaturalWrapMode.WORD}
                     />
                 </Adw.AdwActionRow>
                 <Adw.AdwActionRow>
-                    <Gtk.GtkEntry
-                    marginBottom={10}
-                    marginEnd={10}
-                    marginStart={10}
-                    marginTop={10}
-                        text={selected_Physical_Disk_Information?.Hard_Disk_Summary.Tip}
-                        editable={false} 
-                        sensitive={false} 
-                        widthRequest={200}
+                   <Gtk.GtkLabel
+                        label={selected_Physical_Disk_Information?.Hard_Disk_Summary.Tip || ""}
+                        wrap={true}
+                        selectable={true}
+                        xalign={0}
+                        cssClasses={["dim-label"]}
+                        marginBottom={10}
+                        marginEnd={10}
+                        marginStart={10}
+                        marginTop={10}
+                        widthChars={25}       
+                        maxWidthChars={25}     
+                        naturalWrapMode={Gtk$.NaturalWrapMode.WORD}
                     />
                 </Adw.AdwActionRow>
             </Adw.AdwPreferencesGroup>
