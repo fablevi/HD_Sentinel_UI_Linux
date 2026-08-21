@@ -24,5 +24,21 @@ export const hu: uiTextType = {
         minimumVoltage: "Minimális feszültség",
         maximumVoltage: "Maximális feszültség",
         configuredVoltage: "Beállított feszültség"
+    },
+    disk: {
+        tabDriveInfo: "Meghajtó infó",
+        tabSmart: "S.M.A.R.T.",
+        performance: "Teljesítmény:",
+        health: "Kondíció:",
+        currentTemp: "Jelenlegi hőmérséklet",
+        maxTemp: "Maximális hőmérséklet az élettartam során",
+        description: "Leírás",
+        noData: "Nincs elérhető adat.",
+        smartTitle: "S.M.A.R.T. Attribútumok",
+        smartCount: "Összesen {count} attribútum található",
+        noSmartTitle: "Nem érhető el S.M.A.R.T. adat",
+        noSmartDescription: "Ez a meghajtó nem támogatja a S.M.A.R.T. funkciókat, vagy az adatok nem olvashatók ki.",
+        value: "Érték",
+        threshold: "Küszöb"
     }
 };

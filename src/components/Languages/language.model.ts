@@ -26,4 +26,20 @@ export type uiTextType = {
         maximumVoltage: string;
         configuredVoltage: string;
     };
+    disk: {
+        tabDriveInfo: string;
+        tabSmart: string;
+        performance: string;
+        health: string;
+        currentTemp: string;
+        maxTemp: string;
+        description: string;
+        noData: string;
+        smartTitle: string;
+        smartCount: string;
+        noSmartTitle: string;
+        noSmartDescription: string;
+        value: string;
+        threshold: string;
+    };
 };

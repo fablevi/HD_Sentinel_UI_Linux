@@ -1,10 +1,10 @@
-import {MemoryDevice} from "../../models/ram.model.js";
+import {MemoryDevice} from "../../../../models/ram.model.js";
 import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Adw from "@gtkx/jsx/adw";
-import ActionRow from "./Components/ActionRow.js";
-import {useTranslation} from "../Languages/useTranslation.js";
-import {uiTextType} from "../Languages/language.model.js";
+import ActionRow from "../../Components/ActionRow.js";
+import {useTranslation} from "../../../Languages/useTranslation.js";
+import {uiTextType} from "../../../Languages/language.model.js";
 
 
 type RamDriveViewProps = {

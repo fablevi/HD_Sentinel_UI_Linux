@@ -24,5 +24,21 @@ export const en: uiTextType = {
         minimumVoltage: "Minimum Voltage",
         maximumVoltage: "Maximum Voltage",
         configuredVoltage: "Configured Voltage"
+    },
+    disk: {
+        tabDriveInfo: "Drive Info",
+        tabSmart: "S.M.A.R.T.",
+        performance: "Performance:",
+        health: "Health:",
+        currentTemp: "Current Temperature",
+        maxTemp: "Maximum temperature during entire lifespan",
+        description: "Description",
+        noData: "No data available.",
+        smartTitle: "S.M.A.R.T. Attributes",
+        smartCount: "Total {count} attributes found",
+        noSmartTitle: "S.M.A.R.T. Data Not Available",
+        noSmartDescription: "This drive does not support S.M.A.R.T. features or the data cannot be retrieved.",
+        value: "Value",
+        threshold: "Threshold"
     }
 };
