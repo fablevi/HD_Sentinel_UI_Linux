@@ -16,7 +16,15 @@ export const hu: uiTextType = {
         close: "Bezárás",
         save: "Mentés",
         cancel: "Mégse",
-        copied: "Vágólapra másolva!"
+        copied: "Vágólapra másolva!",
+        openFolder: "Adatmappa megnyitása",
+        clearCache: "Cache törlése",
+        confirm: "Megerősítés",
+        delete: "Törlés"
+    },
+    clearCacheDialog: {
+        title: "Cache törlése?",
+        body: "Biztosan törölni szeretnéd a gyorsítótárazott adatokat? A letöltött HDSentinel bináris is eltávolításra kerül."
     },
     ram: {
         size: "Méret",

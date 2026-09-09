@@ -1,20 +1,24 @@
 import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import { useRef } from "react";
+import { useTranslation } from "../Languages/useTranslation.js";
 
 type SettingsMenuButtonProps = {
+    noClearCacheSettingsAvailable?: boolean
     onOpenSettings: () => void;
     onOpenAbout?: () => void;
-    onSelectOne?: () => void;
-    onSelectTwo?: () => void;
+    onSelectOpenFolder?: () => void;
+    onClearCache?: () => void;
 };
 
 export default function SettingsMenuButton({
+    noClearCacheSettingsAvailable= false,
     onOpenSettings,
     onOpenAbout,
-    onSelectOne,
-    onSelectTwo,
+    onSelectOpenFolder,
+    onClearCache,
 }: SettingsMenuButtonProps) {
+    const { TEXT } = useTranslation();
     const popoverRef = useRef<Gtk$.Popover | null>(null);
 
     const handleAction = (callback?: () => void) => {
@@ -30,25 +34,25 @@ export default function SettingsMenuButton({
                 <Gtk.GtkPopover ref={popoverRef} autohide={true}>
                     <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL} spacing={6} marginTop={6} marginBottom={6} marginStart={6} marginEnd={6}>
                         <Gtk.GtkButton
-                            label="1"
+                            label={TEXT.common.openFolder}
                             cssClasses={["flat"]}
                             focusable={false}
-                            onClicked={() => handleAction(onSelectOne)}
+                            onClicked={() => handleAction(onSelectOpenFolder)}
                         />
-                        <Gtk.GtkButton
-                            label="2"
-                            cssClasses={["flat"]}
+                        {!noClearCacheSettingsAvailable && <Gtk.GtkButton
+                            label={TEXT.common.clearCache}
+                            cssClasses={["flat", "error"]}
                             focusable={false}
-                            onClicked={() => handleAction(onSelectTwo)}
-                        />
+                            onClicked={() => handleAction(onClearCache)}
+                        />}
                         <Gtk.GtkButton
-                            label="Settings"
+                            label={TEXT.settings.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenSettings)}
                         />
                         <Gtk.GtkButton
-                            label="About"
+                            label={TEXT.about.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenAbout)}

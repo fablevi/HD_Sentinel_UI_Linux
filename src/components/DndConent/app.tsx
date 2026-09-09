@@ -17,7 +17,10 @@ import SettingsDialog from "../Settings/SettingsDialog.js";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
 import { useTranslation } from "../Languages/useTranslation.js";
 import SettingsMenuButton from "../Settings/SettingsMenuButton.js";
-import AboutDialog from "../About/AboutDialog.js";
+import AboutDialog from "../Dialogs/AboutDialog.js";
+import { openCacheFolder } from "../../helper/openFolder.js";
+import { clearCacheFolder } from "../../helper/clearCache.js";
+import ClearCacheDialog from "../Dialogs/ClearCacheDialog.js";
 
 type AppProps = {
     setResetApp: (reset: boolean) => void
@@ -34,6 +37,7 @@ export const App = ({ setResetApp }: AppProps) => {
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
     const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
 
+    const [isClearCacheDialogOpen, setIsClearCacheDialogOpen] = useState<boolean>(false);
 
     const [_isHDSentinelExecutableIsAvailable, _setIsHDSentinelExecutableIsAvailable] = useState<"loading" | "notfound" | "available">("loading");
     const [reloadHDSentinellSearch, setReloadHDSentinellSearch] = useState<boolean>(false);
@@ -155,6 +159,12 @@ export const App = ({ setResetApp }: AppProps) => {
         }
     };
 
+    const handleClearCacheConfirm = () => {
+        setIsClearCacheDialogOpen(false);
+        clearCacheFolder();
+        _reloadHDSentinelSearch();
+    };
+
     if (_isHDSentinelExecutableIsAvailable === "loading") {
         return null;
     }
@@ -174,13 +184,14 @@ export const App = ({ setResetApp }: AppProps) => {
                         <AdwHeaderBar
                             end={
                                 <SettingsMenuButton
+                                    noClearCacheSettingsAvailable={true}
                                     onOpenSettings={() => setSettingsDialogVisibility(true)}
                                     onOpenAbout={() => { setIsAboutOpen(true); }}
-                                    onSelectOne={() => {
-                                        // 1-es opció
+                                    onClearCache={() => {
+                                       setIsClearCacheDialogOpen(true)
                                     }}
-                                    onSelectTwo={() => {
-                                        // 2-es opció
+                                    onSelectOpenFolder={() => {
+                                        openCacheFolder()
                                     }}
                                 />
                             }
@@ -203,6 +214,14 @@ export const App = ({ setResetApp }: AppProps) => {
                             onCloseFn={closeSettignsDialog}
                         />
                     )}
+
+
+
+                    <ClearCacheDialog
+                        visible={isClearCacheDialogOpen}
+                        onConfirm={handleClearCacheConfirm}
+                        onClose={() => setIsClearCacheDialogOpen(false)}
+                    />
 
                     {isAboutOpen && (
                         <AboutDialog
@@ -257,5 +276,9 @@ export const App = ({ setResetApp }: AppProps) => {
         windowWidth={windowWidth}
         windowHeight={windowHeight}
         defaultWidth={defaultWidth}
-        defaultHeight={defaultHeight} />;
+        defaultHeight={defaultHeight} 
+        isClearCacheDialogOpen={isClearCacheDialogOpen}    
+        setIsClearCacheDialogOpen={setIsClearCacheDialogOpen}
+        handleClearCacheConfirm={handleClearCacheConfirm}
+    />;
 };

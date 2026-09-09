@@ -28,7 +28,9 @@ import { parseDmidecodeRam } from "../../helper/parseDmidecode.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
 import { useTranslation } from "../Languages/useTranslation.js";
 import SettingsMenuButton from "../Settings/SettingsMenuButton.js";
-import AboutDialog from "../About/AboutDialog.js";
+import AboutDialog from "../Dialogs/AboutDialog.js";
+import { openCacheFolder } from "../../helper/openFolder.js";
+import ClearCacheDialog from "../Dialogs/ClearCacheDialog.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -45,9 +47,21 @@ type RunnerProps = {
     windowHeight: number;
     defaultWidth: number;
     defaultHeight: number;
+    isClearCacheDialogOpen: boolean;
+    setIsClearCacheDialogOpen: (b: boolean) => void
+    handleClearCacheConfirm: () => void
 };
 
-export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, defaultHeight }: RunnerProps) => {
+export const Runner = ({ 
+    setResetApp, 
+    windowWidth, 
+    windowHeight, 
+    defaultWidth, 
+    defaultHeight, 
+    isClearCacheDialogOpen, 
+    setIsClearCacheDialogOpen,
+    handleClearCacheConfirm
+ }: RunnerProps) => {
 
     const [currentWidth, setCurrentWidth] = useState<number>(defaultWidth || windowWidth);
 
@@ -301,6 +315,7 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                     }
                 }}
             >
+
                 {settingsDialogVisibility && (
                     <SettingsDialog
                         visibility={settingsDialogVisibility}
@@ -308,12 +323,20 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                         onCloseFn={closeSettingsDialog}
                     />
                 )}
+
                 {isAboutOpen && (
                     <AboutDialog
                         visible={isAboutOpen}
                         onClose={() => setIsAboutOpen(false)}
                     />
                 )}
+
+                <ClearCacheDialog
+                    visible={isClearCacheDialogOpen}
+                    onConfirm={handleClearCacheConfirm}
+                    onClose={() => setIsClearCacheDialogOpen(false)}
+                />
+
                 <MainComponent
                     hdSentinelDump={hdSentinelDump}
                     ramData={ramData}
@@ -325,11 +348,11 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                         <SettingsMenuButton
                             onOpenSettings={() => setSettingsDialogVisibility(true)}
                             onOpenAbout={() => { setIsAboutOpen(true); }}
-                            onSelectOne={() => {
-                                // 1-es opció
+                            onClearCache={() => {
+                                setIsClearCacheDialogOpen(true)
                             }}
-                            onSelectTwo={() => {
-                                // 2-es opció
+                            onSelectOpenFolder={() => {
+                                openCacheFolder()
                             }}
                         />
                     }
@@ -354,11 +377,11 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                             <SettingsMenuButton
                                 onOpenSettings={() => setSettingsDialogVisibility(true)}
                                 onOpenAbout={() => { setIsAboutOpen(true); }}
-                                onSelectOne={() => {
-                                    // 1-es opció
+                                onClearCache={() => {
+                                    setIsClearCacheDialogOpen(true)
                                 }}
-                                onSelectTwo={() => {
-                                    // 2-es opció
+                                onSelectOpenFolder={() => {
+                                    openCacheFolder()
                                 }}
                             />
                         }
@@ -378,6 +401,11 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                         onClose={() => setIsAboutOpen(false)}
                     />
                 )}
+                <ClearCacheDialog
+                    visible={isClearCacheDialogOpen}
+                    onConfirm={handleClearCacheConfirm}
+                    onClose={() => setIsClearCacheDialogOpen(false)}
+                />
                 <GtkBox
                     orientation={Gtk$.Orientation.VERTICAL}
                     valign={Gtk$.Align.CENTER}

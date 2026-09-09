@@ -16,7 +16,15 @@ export const en: uiTextType = {
         close: "Close",
         save: "Save",
         cancel: "Cancel",
-        copied: "Copied to clipboard!"
+        copied: "Copied to clipboard!",
+        openFolder: "Open Data Folder",
+        clearCache: "Clear Cache",
+        confirm: "Confirm",
+        delete: "Delete"
+    },
+    clearCacheDialog: {
+        title: "Clear Cache?",
+        body: "Are you sure you want to delete all cached files? The downloaded HDSentinel executable will also be removed."
     },
     ram: {
         size: "Size",

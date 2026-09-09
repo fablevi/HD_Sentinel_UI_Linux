@@ -18,6 +18,14 @@ export type uiTextType = {
         save: string;
         cancel: string;
         copied: string;
+        openFolder: string;
+        clearCache: string;
+        confirm: string;
+        delete: string;
+    };
+    clearCacheDialog: {
+        title: string;
+        body: string;
     };
     ram: {
         size: string;

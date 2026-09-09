@@ -88,7 +88,6 @@ export default function AboutDialog({ visible, contentWidth = 440, onClose }: Ab
                         marginStart={16}
                         marginEnd={16}
                     >
-                        {/* Ikon és alkalmazás név */}
                         <Gtk.GtkBox
                             orientation={Gtk$.Orientation.VERTICAL}
                             spacing={6}
@@ -108,38 +107,31 @@ export default function AboutDialog({ visible, contentWidth = 440, onClose }: Ab
                             />
                         </Gtk.GtkBox>
 
-                        {/* Részletek és megnyitható linkek egymás mellett */}
                         <Adw.AdwPreferencesGroup>
-                            {/* Leírás */}
                             <Adw.AdwActionRow
                                 title={TEXT.about.comments}
                             />
 
-                            {/* Hivatalos weboldal */}
                             <LinkRow
                                 title="Official Website (Hard Disk Sentinel)"
                                 url="https://www.hdsentinel.com/"
                             />
 
-                            {/* GitHub Forráskód */}
                             <LinkRow
                                 title="Project Source Code (GitHub)"
                                 url="https://github.com/fablevi/HD_Sentinel_UI_Linux"
                             />
 
-                            {/* Letöltések és kiadások */}
                             <LinkRow
                                 title="App Downloads & Releases"
                                 url="https://github.com/fablevi/HD_Sentinel_UI_Linux/releases/tag/Pre"
                             />
 
-                            {/* Fejlesztő profilja */}
                             <LinkRow
                                 title="UI Developer Profile (fablevi)"
                                 url="https://github.com/fablevi"
                             />
 
-                            {/* Licenc információ */}
                             <Adw.AdwActionRow
                                 title="License"
                                 subtitle="Apache-2.0 (© 2026 fablevi)"
