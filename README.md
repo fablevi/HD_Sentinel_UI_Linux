@@ -84,20 +84,3 @@ The script builds the project, assembles an AppDir, and packages it into:
 ```
 built_files/HDSentinelUI-x86_64.AppImage
 ```
-
-## Project Structure
-
-| Path | Description |
-| --- | --- |
-| `src/index.tsx` | Application entry point |
-| `src/components/DndConent/app.tsx` | Root window and first-run drag-and-drop setup |
-| `src/components/ScriptRunnerComponents/Runner.tsx` | Privileged backend process management |
-| `src/components/MainComponent.tsx` | Main split view layout |
-| `src/components/SideBar/ScrollSideBar.tsx` | Drive, partition and RAM sidebar list |
-| `src/components/DriveContent/` | Detail views (disk info, S.M.A.R.T., RAM) |
-| `src/components/Settings/SettingsDialog.tsx` | Settings dialog (scheme, language) |
-| `src/components/Languages/lang/` | Translation files (`en.ts`, `hu.ts`) |
-| `src/models/` | Data models for XML and RAM parsing |
-| `src/helper/` | XML-to-JSON and dmidecode parsers |
-| `exec/hdsentinel-wrapper.sh` | Privileged wrapper script run via pkexec |
-| `build_appimage.sh` | AppImage packaging script |
