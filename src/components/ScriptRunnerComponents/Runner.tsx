@@ -6,6 +6,7 @@ import {
     AdwStatusPage
 } from "@gtkx/jsx/adw";
 import { GtkButton, GtkBox } from "@gtkx/jsx/gtk";
+import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import { quit } from "@gtkx/react";
 
@@ -26,6 +27,8 @@ import { RamInfo } from "../../models/ram.model.js";
 import { parseDmidecodeRam } from "../../helper/parseDmidecode.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
 import { useTranslation } from "../Languages/useTranslation.js";
+import SettingsMenuButton from "../Settings/SettingsMenuButton.js";
+import AboutDialog from "../About/AboutDialog.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -49,6 +52,8 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
     const [currentWidth, setCurrentWidth] = useState<number>(defaultWidth || windowWidth);
 
     const { TEXT } = useTranslation();
+
+    const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
@@ -303,6 +308,12 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                         onCloseFn={closeSettingsDialog}
                     />
                 )}
+                {isAboutOpen && (
+                    <AboutDialog
+                        visible={isAboutOpen}
+                        onClose={() => setIsAboutOpen(false)}
+                    />
+                )}
                 <MainComponent
                     hdSentinelDump={hdSentinelDump}
                     ramData={ramData}
@@ -311,10 +322,14 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                     setIsSidebarOpen={setIsSidebarOpen}
                     currentWidth={currentWidth}
                     settingsButton={
-                        <GtkButton
-                            iconName="settings-configure-symbolic"
-                            onClicked={() => {
-                                setSettingsDialogVisibility(true);
+                        <SettingsMenuButton
+                            onOpenSettings={() => setSettingsDialogVisibility(true)}
+                            onOpenAbout={() => { setIsAboutOpen(true); }}
+                            onSelectOne={() => {
+                                // 1-es opció
+                            }}
+                            onSelectTwo={() => {
+                                // 2-es opció
                             }}
                         />
                     }
@@ -336,10 +351,14 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                 topBar={
                     <AdwHeaderBar
                         end={
-                            <GtkButton
-                                iconName="settings-configure-symbolic"
-                                onClicked={() => {
-                                    setSettingsDialogVisibility(true);
+                            <SettingsMenuButton
+                                onOpenSettings={() => setSettingsDialogVisibility(true)}
+                                onOpenAbout={() => { setIsAboutOpen(true); }}
+                                onSelectOne={() => {
+                                    // 1-es opció
+                                }}
+                                onSelectTwo={() => {
+                                    // 2-es opció
                                 }}
                             />
                         }
@@ -351,6 +370,12 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                         visibility={settingsDialogVisibility}
                         contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
+                    />
+                )}
+                {isAboutOpen && (
+                    <AboutDialog
+                        visible={isAboutOpen}
+                        onClose={() => setIsAboutOpen(false)}
                     />
                 )}
                 <GtkBox
@@ -367,7 +392,7 @@ export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, d
                             label={TEXT.runner.reauthenticate}
                             iconName="view-refresh-symbolic"
                             cssClasses={["suggested-action", "pill"]}
-                            widthRequest={100} 
+                            widthRequest={100}
                             onClicked={() => {
                                 setResetApp(false);
                             }}

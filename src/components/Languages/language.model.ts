@@ -9,6 +9,10 @@ export type uiTextType = {
         languagesGroupTitle: string;
         language: string;
     };
+    about: {
+        title: string;
+        comments: string;
+    };
     common: {
         close: string;
         save: string;

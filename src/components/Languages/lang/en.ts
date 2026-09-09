@@ -8,6 +8,10 @@ export const en: uiTextType = {
         languagesGroupTitle: "Languages",
         language: "Language"
     },
+    about: {
+        title: "About",
+        comments: "The Hard Disk Sentinel is built by a modern Linux GTK4/Adwaita UI."
+    },
     common: {
         close: "Close",
         save: "Save",

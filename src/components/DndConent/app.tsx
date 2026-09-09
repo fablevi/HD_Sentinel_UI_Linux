@@ -16,12 +16,14 @@ import HDSentinelIcons from "../icons/IconPack.js";
 import SettingsDialog from "../Settings/SettingsDialog.js";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
 import { useTranslation } from "../Languages/useTranslation.js";
+import SettingsMenuButton from "../Settings/SettingsMenuButton.js";
+import AboutDialog from "../About/AboutDialog.js";
 
 type AppProps = {
     setResetApp: (reset: boolean) => void
 }
 
-export const App = ({setResetApp}: AppProps) => {
+export const App = ({ setResetApp }: AppProps) => {
     const { TEXT } = useTranslation();
 
     const windowWidth = 200;
@@ -30,6 +32,8 @@ export const App = ({setResetApp}: AppProps) => {
     const defaultHeight = 600;
 
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
+    const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
+
 
     const [_isHDSentinelExecutableIsAvailable, _setIsHDSentinelExecutableIsAvailable] = useState<"loading" | "notfound" | "available">("loading");
     const [reloadHDSentinellSearch, setReloadHDSentinellSearch] = useState<boolean>(false);
@@ -169,10 +173,14 @@ export const App = ({setResetApp}: AppProps) => {
                     topBar={
                         <AdwHeaderBar
                             end={
-                                <GtkButton
-                                    iconName="settings-configure-symbolic"
-                                    onClicked={() => {
-                                        setSettingsDialogVisibility(true);
+                                <SettingsMenuButton
+                                    onOpenSettings={() => setSettingsDialogVisibility(true)}
+                                    onOpenAbout={() => { setIsAboutOpen(true); }}
+                                    onSelectOne={() => {
+                                        // 1-es opció
+                                    }}
+                                    onSelectTwo={() => {
+                                        // 2-es opció
                                     }}
                                 />
                             }
@@ -193,6 +201,13 @@ export const App = ({setResetApp}: AppProps) => {
                             visibility={settingsDialogVisibility}
                             contentWidth={windowWidth}
                             onCloseFn={closeSettignsDialog}
+                        />
+                    )}
+
+                    {isAboutOpen && (
+                        <AboutDialog
+                            visible={isAboutOpen}
+                            onClose={() => setIsAboutOpen(false)}
                         />
                     )}
 
@@ -237,10 +252,10 @@ export const App = ({setResetApp}: AppProps) => {
         );
     }
 
-    return <Runner 
-                setResetApp={setResetApp} 
-                windowWidth={windowWidth} 
-                windowHeight={windowHeight} 
-                defaultWidth={defaultWidth}
-                defaultHeight={defaultHeight}/>;
+    return <Runner
+        setResetApp={setResetApp}
+        windowWidth={windowWidth}
+        windowHeight={windowHeight}
+        defaultWidth={defaultWidth}
+        defaultHeight={defaultHeight} />;
 };

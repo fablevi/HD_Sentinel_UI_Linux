@@ -8,6 +8,10 @@ export const hu: uiTextType = {
         languagesGroupTitle: "Nyelvek",
         language: "Nyelv"
     },
+    about: {
+        title: "Névjegy",
+        comments: "A Hard Disk Sentinel modern Linux GTK4/Adwaita grafikus felhasználói felülete."
+    },
     common: {
         close: "Bezárás",
         save: "Mentés",
