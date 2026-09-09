@@ -13,6 +13,7 @@ export type uiTextType = {
         close: string;
         save: string;
         cancel: string;
+        copied: string;
     };
     ram: {
         size: string;
@@ -74,5 +75,16 @@ export type uiTextType = {
         errorTitle: string;
         errorDescription: string;
         reauthenticate: string;
+    };
+    partition: {
+        title: string;
+        drive: string;
+        totalSpace: string;
+        freeSpace: string;
+        freeSpacePercent: string;
+        fileSystem: string;
+        blockSize: string;
+        filesCount: string;
+        noPartitions: string;
     };
 };

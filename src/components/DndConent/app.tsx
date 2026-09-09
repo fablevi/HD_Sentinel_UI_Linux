@@ -27,7 +27,7 @@ export const App = ({setResetApp}: AppProps) => {
     const windowWidth = 200;
     const windowHeight = 540;
     const defaultWidth = 600;
-    const defaultHeight = 1000;
+    const defaultHeight = 600;
 
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
 

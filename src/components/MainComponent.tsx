@@ -59,7 +59,7 @@ export default function MainComponent({
             sidebar={
                 <AdwToolbarView topBar={
                     <AdwHeaderBar 
-                        showTitle={isSmallWindow ? isSidebarOpen : true}
+                        showTitle={isSmallWindow ? isSidebarOpen : false}
                         end={isSmallWindow && isSidebarOpen ? [
                             <Gtk.GtkButton
                                 key="close-sidebar-btn"

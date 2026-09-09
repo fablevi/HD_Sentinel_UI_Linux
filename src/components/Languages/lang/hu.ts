@@ -11,7 +11,8 @@ export const hu: uiTextType = {
     common: {
         close: "Bezárás",
         save: "Mentés",
-        cancel: "Mégse"
+        cancel: "Mégse",
+        copied: "Vágólapra másolva!"
     },
     ram: {
         size: "Méret",
@@ -73,5 +74,16 @@ export const hu: uiTextType = {
         errorTitle: "Sikertelen azonosítás",
         errorDescription: "Kattints az alábbi gombra az újrahitelesítéshez!",
         reauthenticate: "Újrahitelesítés"
-    }
+    },
+    partition: {
+        title: "Partíciók",
+        drive: "Meghajtó / Csatolási pont (clikk másoláshoz)",
+        totalSpace: "Teljes tárhely",
+        freeSpace: "Szabad tárhely",
+        freeSpacePercent: "Szabad tárhely (%)",
+        fileSystem: "Fájlrendszer",
+        blockSize: "Blokkméret",
+        filesCount: "Fájlok száma",
+        noPartitions: "Nem találhatók partíciók."
+    },
 };

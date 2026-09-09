@@ -5,25 +5,29 @@ import * as Adw from "@gtkx/jsx/adw";
 type ActionRowProps = {
     title: string;
     subtitle: string;
-    flip?:boolean
-}
+    flip?: boolean;
+    onClick?: () => void;
+};
 
-export default function ActionRow({title, subtitle, flip= false}: ActionRowProps) {
+export default function ActionRow({ title, subtitle, flip = false, onClick }: ActionRowProps) {
     return (
-        <Adw.AdwActionRow>
+        <Adw.AdwActionRow 
+            activatable={!!onClick} 
+            onActivated={() => onClick?.()}
+        >
             <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL} valign={Gtk$.Align.CENTER}>
-                {flip ?
+                {flip ? (
                     <>
-                        <Gtk.GtkLabel label={title} xalign={0} marginBottom={10} marginStart={10} marginEnd={10}/>
-                        <Gtk.GtkLabel label={subtitle} cssClasses={["subtitle", "dim-label"]} xalign={0} marginBottom={5} marginTop={10} marginStart={10} marginEnd={10}/>
+                        <Gtk.GtkLabel label={title} xalign={0} marginBottom={10} marginStart={10} marginEnd={10} />
+                        <Gtk.GtkLabel label={subtitle} cssClasses={["subtitle", "dim-label"]} xalign={0} marginBottom={5} marginTop={10} marginStart={10} marginEnd={10} />
                     </>
-                    :
+                ) : (
                     <>
-                        <Gtk.GtkLabel label={subtitle} cssClasses={["subtitle", "dim-label"]} xalign={0} marginBottom={5} marginTop={10} marginStart={10} marginEnd={10}/>
-                        <Gtk.GtkLabel label={title} xalign={0} marginBottom={10} marginStart={10} marginEnd={10}/>
+                        <Gtk.GtkLabel label={subtitle} cssClasses={["subtitle", "dim-label"]} xalign={0} marginBottom={5} marginTop={10} marginStart={10} marginEnd={10} />
+                        <Gtk.GtkLabel label={title} xalign={0} marginBottom={10} marginStart={10} marginEnd={10} />
                     </>
-                }
+                )}
             </Gtk.GtkBox>
         </Adw.AdwActionRow>
-    )
+    );
 }

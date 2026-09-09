@@ -2,11 +2,10 @@ import { GtkBox } from "@gtkx/jsx/gtk";
 import { Orientation } from "@gtkx/gi/gtk";
 import { PartitionDetails, PhysicalDiskInformation } from "../../models/hdsentinel.model.js";
 import RemoveableDriveView from "./Disc/Removeable/RemoveableDriveView.js";
-import NotRemoveableDriveView from "./Disc/NotRemovable/NotRemoveableDriveView.js";
 import { MemoryDevice } from "../../models/ram.model.js";
 import RamDriveView from "./Disc/Ram/RamDriveView.js";
-import { useEffect } from "react";
 import TabulatedView from "./Disc/NotRemovable/TabulatedView.js";
+import DiskView from "./Disc/Disks/DiskView.js";
 
 type DriveContentViewProps = {
     selected_Physical_Disk_Information: PhysicalDiskInformation | undefined;
@@ -37,9 +36,11 @@ export default function DriveContentView({
                     :
                     <TabulatedView selected_Physical_Disk_Information={selected_Physical_Disk_Information}/>
                 :
-                load_Drive_Window_Type === "Partition" ? <></> :
-                    load_Drive_Window_Type === "Ram" ?
-                        <RamDriveView selected_RamInfo_by_Device={selected_RamInfo_by_Device} /> : <></>
+            load_Drive_Window_Type === "Partition" ? 
+                <DiskView selected_Partition_Information={selected_Partition_Information}/> 
+                :
+            load_Drive_Window_Type === "Ram" ?
+                <RamDriveView selected_RamInfo_by_Device={selected_RamInfo_by_Device} /> :null
             }
         </GtkBox>
     )

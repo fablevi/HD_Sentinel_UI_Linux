@@ -11,7 +11,8 @@ export const en: uiTextType = {
     common: {
         close: "Close",
         save: "Save",
-        cancel: "Cancel"
+        cancel: "Cancel",
+        copied: "Copied to clipboard!"
     },
     ram: {
         size: "Size",
@@ -73,5 +74,16 @@ export const en: uiTextType = {
         errorTitle: "User not authenticated",
         errorDescription: "Click the button below to reauthenticate!",
         reauthenticate: "Reauthenticate"
-    }
+    },
+    partition: {
+        title: "Partitions",
+        drive: "Drive / Mount Point (click to copy)",
+        totalSpace: "Total Space",
+        freeSpace: "Free Space",
+        freeSpacePercent: "Free Space (%)",
+        fileSystem: "File System",
+        blockSize: "Block Size",
+        filesCount: "Total Files",
+        noPartitions: "No partitions found."
+    },
 };
