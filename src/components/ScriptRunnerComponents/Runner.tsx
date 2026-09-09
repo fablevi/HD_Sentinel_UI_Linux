@@ -38,13 +38,17 @@ const userWrapperScript = path.join(userExecDir, "hdsentinel-wrapper.sh");
 
 type RunnerProps = {
     setResetApp: (reset: boolean) => void;
+    windowWidth: number;
+    windowHeight: number;
+    defaultWidth: number;
+    defaultHeight: number;
 };
 
-export const Runner = ({ setResetApp }: RunnerProps) => {
-    const { TEXT } = useTranslation();
+export const Runner = ({ setResetApp, windowWidth, windowHeight, defaultWidth, defaultHeight }: RunnerProps) => {
 
-    const windowWidth = 600;
-    const windowHeight = 450;
+    const [currentWidth, setCurrentWidth] = useState<number>(defaultWidth || windowWidth);
+
+    const { TEXT } = useTranslation();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [hdSentinelDump, setHdSentinelDump] = useState<HDSentinelRoot>();
@@ -283,12 +287,19 @@ export const Runner = ({ setResetApp }: RunnerProps) => {
                 title={titleString || "HD Sentinel"}
                 widthRequest={windowWidth}
                 heightRequest={windowHeight}
+                defaultWidth={defaultWidth}
+                defaultHeight={defaultHeight}
                 onCloseRequest={handleClose}
+                onNotifyDefaultWidth={(w) => {
+                    if (typeof w === "number" && w > 0) {
+                        setCurrentWidth(w);
+                    }
+                }}
             >
                 {settingsDialogVisibility && (
                     <SettingsDialog
                         visibility={settingsDialogVisibility}
-                        contentWidth={windowWidth}
+                        contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
                     />
                 )}
@@ -298,6 +309,7 @@ export const Runner = ({ setResetApp }: RunnerProps) => {
                     setTitleString={setTitleString}
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
+                    currentWidth={currentWidth}
                     settingsButton={
                         <GtkButton
                             iconName="settings-configure-symbolic"
@@ -316,6 +328,8 @@ export const Runner = ({ setResetApp }: RunnerProps) => {
             title={"HD Sentinel"}
             widthRequest={windowWidth}
             heightRequest={windowHeight}
+            defaultWidth={defaultWidth}
+            defaultHeight={defaultHeight}
             onCloseRequest={handleClose}
         >
             <AdwToolbarView
@@ -335,7 +349,7 @@ export const Runner = ({ setResetApp }: RunnerProps) => {
                 {settingsDialogVisibility && (
                     <SettingsDialog
                         visibility={settingsDialogVisibility}
-                        contentWidth={windowWidth}
+                        contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
                     />
                 )}

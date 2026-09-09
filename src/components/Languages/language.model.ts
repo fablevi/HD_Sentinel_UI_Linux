@@ -41,6 +41,27 @@ export type uiTextType = {
         noSmartDescription: string;
         value: string;
         threshold: string;
+        summaryTitle: string;
+        propertiesTitle: string;
+        scsiTitle: string;
+        hardDiskNumber: string;
+        hardDiskDevice: string;
+        interface: string;
+        hardDiskModelId: string;
+        firmwareRevision: string;
+        hardDiskSerialNumber: string;
+        totalSize: string;
+        vendorInformation: string;
+        status: string;
+        version: string;
+        deviceType: string;
+        asc: string;
+        ascq: string;
+        bytesPerSector: string;
+        totalSectors: string;
+        unformattedCapacity: string;
+        removable: string;
+        failurePrediction: string;
     };
     notFound: {
         errorTitle: string;

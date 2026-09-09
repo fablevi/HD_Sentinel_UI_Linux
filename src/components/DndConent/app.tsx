@@ -24,8 +24,10 @@ type AppProps = {
 export const App = ({setResetApp}: AppProps) => {
     const { TEXT } = useTranslation();
 
-    const windowWidth = 600; //960;
-    const windowHeight = 450; //540;
+    const windowWidth = 200;
+    const windowHeight = 540;
+    const defaultWidth = 600;
+    const defaultHeight = 1000;
 
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
 
@@ -159,6 +161,8 @@ export const App = ({setResetApp}: AppProps) => {
                 title={"HD Sentinel"}
                 widthRequest={windowWidth}
                 heightRequest={windowHeight}
+                defaultWidth={defaultWidth}
+                defaultHeight={defaultHeight}
                 onCloseRequest={handleClose}
             >
                 <AdwToolbarView
@@ -233,5 +237,10 @@ export const App = ({setResetApp}: AppProps) => {
         );
     }
 
-    return <Runner setResetApp={setResetApp}/>;
+    return <Runner 
+                setResetApp={setResetApp} 
+                windowWidth={windowWidth} 
+                windowHeight={windowHeight} 
+                defaultWidth={defaultWidth}
+                defaultHeight={defaultHeight}/>;
 };

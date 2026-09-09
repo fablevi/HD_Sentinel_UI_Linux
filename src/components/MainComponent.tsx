@@ -1,49 +1,72 @@
-import {  AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/adw";
-import  * as Gtk from "@gtkx/jsx/gtk"
-import {HDSentinelRoot, PartitionDetails, PhysicalDiskInformation} from "../models/hdsentinel.model.js";
-import {ReactNode, useEffect, useState} from "react";
+import { AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/adw";
+import * as Gtk from "@gtkx/jsx/gtk";
+import { HDSentinelRoot, PartitionDetails, PhysicalDiskInformation } from "../models/hdsentinel.model.js";
+import { ReactNode, useEffect, useState } from "react";
 import ScrollSideBar from "./SideBar/ScrollSideBar.js";
 import DriveContentView from "./DriveContent/DriveContentView.js";
-import {MemoryDevice, RamInfo} from "../models/ram.model.js";
+import { MemoryDevice, RamInfo } from "../models/ram.model.js";
 
 type MainComponentProps = {
-    hdSentinelDump: HDSentinelRoot | undefined
+    hdSentinelDump: HDSentinelRoot | undefined;
     ramData: RamInfo | undefined;
-    setTitleString: (titleString: string) => void
+    setTitleString: (titleString: string) => void;
     isSidebarOpen: boolean;
-    setIsSidebarOpen:(isSidebarOpen:boolean)=>void;
-    settingsButton: ReactNode
-}
+    setIsSidebarOpen: (isSidebarOpen: boolean) => void;
+    settingsButton: ReactNode;
+    currentWidth: number;
+};
 
-export default function MainComponent({ hdSentinelDump, setTitleString, ramData, isSidebarOpen, setIsSidebarOpen, settingsButton }:MainComponentProps){
+export default function MainComponent({ 
+    hdSentinelDump, 
+    setTitleString, 
+    ramData, 
+    isSidebarOpen, 
+    setIsSidebarOpen, 
+    settingsButton,
+    currentWidth
+}: MainComponentProps) {
 
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
     const [selected_Partition_Information, set_Selected_Partition_Information] = useState<PartitionDetails | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Partition_Information.Partition[0]);
     const [selected_RamInfo_by_Device, set_Selected_RamInfo_by_Device] = useState<MemoryDevice | undefined>(ramData?.devices[0]);
-    const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk"|"Partition"|"Ram">("Disk")
+    const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk" | "Partition" | "Ram">("Disk");
+
+    const isSmallWindow = currentWidth < 700;
 
     useEffect(() => {
-        if (load_Drive_Window_Type === "Disk"){
+        if (load_Drive_Window_Type === "Disk") {
             setTitleString(selected_Physical_Disk_Information?.Hard_Disk_Summary.Hard_Disk_Model_ID || "");
-        }else if (load_Drive_Window_Type === "Partition"){
+        } else if (load_Drive_Window_Type === "Partition") {
             setTitleString(selected_Partition_Information?.Disk || "");
-        } else if (load_Drive_Window_Type === "Ram"){
+        } else if (load_Drive_Window_Type === "Ram") {
             setTitleString(selected_RamInfo_by_Device?.bankLocator || "");
         }
+        setIsSidebarOpen(false);
     }, [selected_Physical_Disk_Information, selected_Partition_Information, selected_RamInfo_by_Device, load_Drive_Window_Type]);
 
     return (
         <AdwOverlaySplitView
-            showSidebar={isSidebarOpen}
+            showSidebar={isSmallWindow ? isSidebarOpen : true}
+            collapsed={isSmallWindow}
+            pinSidebar={!isSmallWindow}
+            enableHideGesture={isSmallWindow}
+            enableShowGesture={isSmallWindow}
+            onNotifyShowSidebar={(value) => {
+                if (isSmallWindow && value !== null && value !== isSidebarOpen) {
+                    setIsSidebarOpen(value);
+                }
+            }}
             sidebar={
                 <AdwToolbarView topBar={
-                    <AdwHeaderBar showTitle={isSidebarOpen}
-                                  end={isSidebarOpen ? [
-                                      <Gtk.GtkButton
-                                          iconName="go-previous-symbolic"
-                                          onClicked={() => setIsSidebarOpen(!isSidebarOpen)}
-                                      />
-                                  ]: []}
+                    <AdwHeaderBar 
+                        showTitle={isSmallWindow ? isSidebarOpen : true}
+                        end={isSmallWindow && isSidebarOpen ? [
+                            <Gtk.GtkButton
+                                key="close-sidebar-btn"
+                                iconName="go-previous-symbolic"
+                                onClicked={() => setIsSidebarOpen(false)}
+                            />
+                        ] : []}
                     />
                 }>
                     <ScrollSideBar
@@ -63,25 +86,29 @@ export default function MainComponent({ hdSentinelDump, setTitleString, ramData,
                 </AdwToolbarView>
             }
             content={
-            <AdwToolbarView topBar={<AdwHeaderBar showTitle={!isSidebarOpen}
-                                                  start={!isSidebarOpen ? [
-                                                      <Gtk.GtkButton
-                                                          iconName="go-next-symbolic"
-                                                          onClicked={() => setIsSidebarOpen(!isSidebarOpen)}
-                                                      />
-                                                  ]: []}
-                                                  end={settingsButton}
-            />}>
-                <DriveContentView
-                    selected_Physical_Disk_Information={selected_Physical_Disk_Information}
-                    selected_Partition_Information={selected_Partition_Information}
-                    load_Drive_Window_Type={load_Drive_Window_Type}
-                    selected_RamInfo_by_Device={selected_RamInfo_by_Device}
-                    isSidebarOpen={isSidebarOpen}
-                    setIsSidebarOpen={setIsSidebarOpen}
-                />
-            </AdwToolbarView>
+                <AdwToolbarView topBar={
+                    <AdwHeaderBar 
+                        showTitle={isSmallWindow ? !isSidebarOpen : true}
+                        start={isSmallWindow && !isSidebarOpen ? [
+                            <Gtk.GtkButton
+                                key="open-sidebar-btn"
+                                iconName="go-next-symbolic"
+                                onClicked={() => setIsSidebarOpen(true)}
+                            />
+                        ] : []}
+                        end={settingsButton}
+                    />
+                }>
+                    <DriveContentView
+                        selected_Physical_Disk_Information={selected_Physical_Disk_Information}
+                        selected_Partition_Information={selected_Partition_Information}
+                        load_Drive_Window_Type={load_Drive_Window_Type}
+                        selected_RamInfo_by_Device={selected_RamInfo_by_Device}
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                    />
+                </AdwToolbarView>
             }
         />
-    )
+    );
 }
