@@ -32,7 +32,7 @@ export default function SettingsMenuButton({
             focusable={false}
             popover={
                 <Gtk.GtkPopover ref={popoverRef} autohide={true}>
-                    <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL} spacing={6} marginTop={6} marginBottom={6} marginStart={6} marginEnd={6}>
+                    <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL}>
                         <Gtk.GtkButton
                             label={TEXT.common.openFolder}
                             cssClasses={["flat"]}

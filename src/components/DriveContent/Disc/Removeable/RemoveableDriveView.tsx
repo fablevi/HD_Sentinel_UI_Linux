@@ -20,10 +20,6 @@ export default function RemoveableDriveView({ selected_Physical_Disk_Information
 
     const gtkBoxMargin = 20;
 
-    useEffect(() => {
-        console.log(selected_Physical_Disk_Information)
-    }, [selected_Physical_Disk_Information])
-
     return (<>
         <Gtk.GtkBox hexpand={true} orientation={Gtk$.Orientation.VERTICAL} marginStart={gtkBoxMargin} marginEnd={gtkBoxMargin}>
             <Adw.AdwPreferencesGroup hexpand={true} marginBottom={gtkBoxMargin}>

@@ -6,11 +6,14 @@ export const hu: uiTextType = {
         styleGroupTitle: "Stílus",
         appSchemeStyle: "Alkalmazás témája",
         languagesGroupTitle: "Nyelvek",
-        language: "Nyelv"
+        language: "Nyelv",
+        refreshIntervalTitle: "Frissítési intervallum (mp)",
+        refreshIntervalSubtitle: "Adatok kiírásának és újraolvasásának sűrűsége",
+        cache: "Cache"
     },
     about: {
         title: "Névjegy",
-        comments: "A Hard Disk Sentinel modern Linux GTK4/Adwaita grafikus felhasználói felülete."
+        comments: "Modern GTK4/Adwaita felület Linuxra a Hard Disk Sentinelhez."
     },
     common: {
         close: "Bezárás",
@@ -73,7 +76,16 @@ export const hu: uiTextType = {
         totalSectors: "Összes szektor",
         unformattedCapacity: "Formázatlan kapacitás",
         removable: "Cserélhető adathordozó",
-        failurePrediction: "Meghibásodás-előrejelzés"
+        failurePrediction: "Meghibásodás-előrejelzés",
+        measuredMaxTemp: "Mért Max",
+        statusHistoryTitle: "Kondíció és Teljesítmény előzmények (utolsó 20 mérés)",
+        tempHistoryTitle: "Hőmérséklet előzmények (utolsó 20 mérés)",
+        dataTableTitle: "Mérési adatok táblázata",
+        time: "Időpont",
+        temp: "Hőfok",
+        legendCondition: "Kondíció",
+        legendPerformance: "Teljesítmény",
+        legendTemp: "Hőmérséklet"
     },
     notFound: {
         errorTitle: "Hiba: A HDSentinel nem található!",

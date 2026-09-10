@@ -8,6 +8,9 @@ export type uiTextType = {
         appSchemeStyle: string;
         languagesGroupTitle: string;
         language: string;
+        refreshIntervalTitle: string;
+        refreshIntervalSubtitle: string;
+        cache: string;
     };
     about: {
         title: string;
@@ -75,6 +78,15 @@ export type uiTextType = {
         unformattedCapacity: string;
         removable: string;
         failurePrediction: string;
+        measuredMaxTemp: string;
+        statusHistoryTitle: string;
+        tempHistoryTitle: string;
+        dataTableTitle: string;
+        time: string;
+        temp: string;
+        legendCondition: string;
+        legendPerformance: string;
+        legendTemp: string;
     };
     notFound: {
         errorTitle: string;

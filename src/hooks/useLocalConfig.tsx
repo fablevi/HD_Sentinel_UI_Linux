@@ -3,11 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { EventEmitter } from "events";
-import {languageType} from "../components/Languages/language.model.js";
+import { languageType } from "../components/Languages/language.model.js";
 
 type Settings = {
-  scheme: number,
-  language: languageType,
+  scheme: number;
+  language: languageType;
+  refreshInterval: number; // ÚJ MEZŐ (másodpercben)
   [key: string]: any;
 };
 
@@ -19,7 +20,8 @@ const MEASURE_PATH = path.join(CONFIG_DIR, "measure.json");
 
 const DEFAULT_SETTINGS: Settings = {
   scheme: 0,
-  language: "en"
+  language: "en",
+  refreshInterval: 600
 };
 
 const DEFAULT_MEASURE: Measure = {};
@@ -31,7 +33,10 @@ class ConfigStore extends EventEmitter {
   constructor() {
     super();
     this.ensureFiles();
-    this.settings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
+    
+    const rawSettings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
+    this.settings = { ...DEFAULT_SETTINGS, ...rawSettings };
+    
     this.measure = this.readJSON(MEASURE_PATH, DEFAULT_MEASURE);
   }
 
@@ -94,7 +99,8 @@ class ConfigStore extends EventEmitter {
   }
 
   reload() {
-    this.settings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
+    const rawSettings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
+    this.settings = { ...DEFAULT_SETTINGS, ...rawSettings };
     this.measure = this.readJSON(MEASURE_PATH, DEFAULT_MEASURE);
     this.emit("change", { type: "reload" });
   }

@@ -6,7 +6,10 @@ export const en: uiTextType = {
         styleGroupTitle: "Style",
         appSchemeStyle: "App scheme style",
         languagesGroupTitle: "Languages",
-        language: "Language"
+        language: "Language",
+        refreshIntervalTitle: "Refresh interval (sec)",
+        refreshIntervalSubtitle: "Frequency of writing and reading measured data",
+        cache: "Cache"
     },
     about: {
         title: "About",
@@ -73,7 +76,16 @@ export const en: uiTextType = {
         totalSectors: "Total Sectors",
         unformattedCapacity: "Unformatted Capacity",
         removable: "Removable",
-        failurePrediction: "Failure Prediction"
+        failurePrediction: "Failure Prediction",
+        measuredMaxTemp: "Measured Max",
+        statusHistoryTitle: "Health and Performance History (last 20 samples)",
+        tempHistoryTitle: "Temperature History (last 20 samples)",
+        dataTableTitle: "Measurement Data Table",
+        time: "Time",
+        temp: "Temperature",
+        legendCondition: "Health",
+        legendPerformance: "Performance",
+        legendTemp: "Temperature"
     },
     notFound: {
         errorTitle: "Error: HDSentinel not found!",

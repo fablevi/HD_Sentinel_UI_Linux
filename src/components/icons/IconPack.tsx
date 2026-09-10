@@ -24,6 +24,8 @@ import ramDefault from "../../assets/png/ram-default.png";
 import blackFile from "../../assets/png/file_black.png"
 import whiteFile from "../../assets/png/file_white.png"
 
+import runnerIcon from "../../assets/sata_default_rounded.png"
+
 const ASSETS_MAP = {
     "lan-default": lanDefault,
     "lan-offline": lanOffline,
@@ -43,6 +45,7 @@ const ASSETS_MAP = {
     "ram-default": ramDefault,
     "black-file": blackFile,
     "white-file": whiteFile,
+    "runner-icon": runnerIcon
 } as const;
 
 export type IconName = keyof typeof ASSETS_MAP;

@@ -13,10 +13,10 @@ import os from "node:os";
 import { quit } from "@gtkx/react";
 import { Runner } from "../ScriptRunnerComponents/Runner.js";
 import HDSentinelIcons from "../icons/IconPack.js";
-import SettingsDialog from "../Settings/SettingsDialog.js";
+import SettingsDialog from "../Dialogs/SettingsDialog.js";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
 import { useTranslation } from "../Languages/useTranslation.js";
-import SettingsMenuButton from "../Settings/SettingsMenuButton.js";
+import SettingsMenuButton from "../Dialogs/SettingsMenuButton.js";
 import AboutDialog from "../Dialogs/AboutDialog.js";
 import { openCacheFolder } from "../../helper/openFolder.js";
 import { clearCacheFolder } from "../../helper/clearCache.js";
@@ -29,7 +29,7 @@ type AppProps = {
 export const App = ({ setResetApp }: AppProps) => {
     const { TEXT } = useTranslation();
 
-    const windowWidth = 200;
+    const windowWidth = 400;
     const windowHeight = 540;
     const defaultWidth = 600;
     const defaultHeight = 600;

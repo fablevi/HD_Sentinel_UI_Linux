@@ -7,12 +7,14 @@ import * as Gtk$ from "@gtkx/gi/gtk";
 import NotRemoveableDriveView from "./NotRemoveableDriveView.js";
 import SMARTView from "./SMARTView.js";
 import { useTranslation } from "../../../Languages/useTranslation.js";
+import { DiskHistoryEntry } from "../../../MainComponent.js";
 
 type TabulatedViewProps = {
     selected_Physical_Disk_Information: PhysicalDiskInformation | undefined;
+    selectedDiskHistory: DiskHistoryEntry[];
 };
 
-export default function TabulatedView({ selected_Physical_Disk_Information }: TabulatedViewProps) {
+export default function TabulatedView({ selected_Physical_Disk_Information, selectedDiskHistory }: TabulatedViewProps) {
     const { TEXT } = useTranslation();
     const [activeTab, setActiveTab] = useState<"drive_info" | "smart_info">("drive_info");
 
@@ -54,6 +56,7 @@ export default function TabulatedView({ selected_Physical_Disk_Information }: Ta
                     {activeTab === "drive_info" && (
                         <NotRemoveableDriveView
                             selected_Physical_Disk_Information={selected_Physical_Disk_Information}
+                            selectedDiskHistory={selectedDiskHistory}
                         />
                     )}
 

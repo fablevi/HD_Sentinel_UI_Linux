@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useState } from "react";
 import ScrollSideBar from "./SideBar/ScrollSideBar.js";
 import DriveContentView from "./DriveContent/DriveContentView.js";
 import { MemoryDevice, RamInfo } from "../models/ram.model.js";
+import { localConfigStore, Measure } from "../hooks/useLocalConfig.js";
 
 type MainComponentProps = {
     hdSentinelDump: HDSentinelRoot | undefined;
@@ -14,6 +15,19 @@ type MainComponentProps = {
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;
     settingsButton: ReactNode;
     currentWidth: number;
+};
+
+export type DiskHistoryEntry = {
+    timestamp: string;
+    temperature: number;
+    health: number;
+    performance: number;
+};
+
+const parseNumber = (val: string | undefined): number => {
+    if (!val) return 0;
+    const match = val.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
 };
 
 export default function MainComponent({ 
@@ -31,7 +45,56 @@ export default function MainComponent({
     const [selected_RamInfo_by_Device, set_Selected_RamInfo_by_Device] = useState<MemoryDevice | undefined>(ramData?.devices[0]);
     const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk" | "Partition" | "Ram">("Disk");
 
+    const [selectedDiskHistory, setSelectedDiskHistory] = useState<DiskHistoryEntry[]>([]);
+
+    //useEffect(()=>{console.log(selectedDiskHistory)},[selectedDiskHistory])
+
     const isSmallWindow = currentWidth < 700;
+
+    useEffect(() => {
+        if (!selected_Physical_Disk_Information) return;
+
+        const serial = selected_Physical_Disk_Information.Hard_Disk_Summary.Hard_Disk_Serial_Number;
+        const currentMeasures: Measure = localConfigStore.getMeasure();
+        
+        setSelectedDiskHistory(currentMeasures[serial] || []);
+    }, [selected_Physical_Disk_Information]);
+
+    useEffect(() => {
+        if (!hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information) return;
+
+        const intervalSec = localConfigStore.getSettings().refreshInterval || 5;
+        const intervalMs = intervalSec * 1000;
+
+        const timer = setInterval(() => {
+            const now = new Date().toISOString();
+            const currentMeasures: Measure = { ...localConfigStore.getMeasure() };
+
+            hdSentinelDump.Hard_Disk_Sentinel.Physical_Disk_Information.forEach((disk) => {
+                const serial = disk.Hard_Disk_Summary.Hard_Disk_Serial_Number;
+                if (!serial) return;
+
+                const entry: DiskHistoryEntry = {
+                    timestamp: now,
+                    temperature: parseNumber(disk.Hard_Disk_Summary.Current_Temperature),
+                    health: parseNumber(disk.Hard_Disk_Summary.Health),
+                    performance: parseNumber(disk.Hard_Disk_Summary.Performance)
+                };
+
+                const existingEntries: DiskHistoryEntry[] = currentMeasures[serial] || [];
+                currentMeasures[serial] = [...existingEntries, entry];
+            });
+
+            localConfigStore.setMeasure(currentMeasures);
+
+            if (selected_Physical_Disk_Information) {
+                const activeSerial = selected_Physical_Disk_Information.Hard_Disk_Summary.Hard_Disk_Serial_Number;
+                setSelectedDiskHistory(currentMeasures[activeSerial] || []);
+            }
+        }, intervalMs);
+
+        return () => clearInterval(timer);
+    }, [hdSentinelDump, selected_Physical_Disk_Information]);
 
     useEffect(() => {
         if (load_Drive_Window_Type === "Disk") {
@@ -106,6 +169,7 @@ export default function MainComponent({
                         selected_RamInfo_by_Device={selected_RamInfo_by_Device}
                         isSidebarOpen={isSidebarOpen}
                         setIsSidebarOpen={setIsSidebarOpen}
+                        selectedDiskHistory={selectedDiskHistory}
                     />
                 </AdwToolbarView>
             }

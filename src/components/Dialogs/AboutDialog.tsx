@@ -6,6 +6,7 @@ import React from "react";
 // @ts-ignore
 import { exec } from "child_process";
 import { useTranslation } from "../Languages/useTranslation.js";
+import HDSentinelIcons from "../icons/IconPack.js";
 
 type AboutDialogProps = {
     visible: boolean;
@@ -13,7 +14,7 @@ type AboutDialogProps = {
     onClose: () => void;
 };
 
-export default function AboutDialog({ visible, contentWidth = 440, onClose }: AboutDialogProps) {
+export default function AboutDialog({ visible, contentWidth = 450, onClose }: AboutDialogProps) {
     const { TEXT } = useTranslation();
 
     if (!visible) return null;
@@ -93,10 +94,7 @@ export default function AboutDialog({ visible, contentWidth = 440, onClose }: Ab
                             spacing={6}
                             halign={Gtk$.Align.CENTER}
                         >
-                            <Gtk.GtkImage
-                                iconName="drive-harddisk-symbolic"
-                                pixelSize={64}
-                            />
+                            <HDSentinelIcons name={"runner-icon"} pixelSize={96}/>
                             <Gtk.GtkLabel
                                 label="HD Sentinel UI Linux"
                                 cssClasses={["title-1"]}
