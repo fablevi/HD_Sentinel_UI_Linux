@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import {
     AdwApplicationWindow,
     AdwHeaderBar,
@@ -22,7 +22,7 @@ import os from "os";
 
 import { parseXmlToJson } from "../../helper/XMLtoJSON.js";
 import { HDSentinelRoot } from "../../models/hdsentinel.model.js";
-import MainComponent from "../MainComponent.js";
+import MainComponent, { DiskHistoryEntry } from "../MainComponent.js";
 import { RamInfo } from "../../models/ram.model.js";
 import { parseDmidecodeRam } from "../../helper/parseDmidecode.js";
 import SettingsDialog from "../Dialogs/SettingsDialog.js";
@@ -31,6 +31,7 @@ import SettingsMenuButton from "../Dialogs/SettingsMenuButton.js";
 import AboutDialog from "../Dialogs/AboutDialog.js";
 import { openCacheFolder } from "../../helper/openFolder.js";
 import ClearCacheDialog from "../Dialogs/ClearCacheDialog.js";
+import { localConfigStore } from "../../hooks/useLocalConfig.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -50,18 +51,22 @@ type RunnerProps = {
     isClearCacheDialogOpen: boolean;
     setIsClearCacheDialogOpen: (b: boolean) => void
     handleClearCacheConfirm: () => void
+    selectedDiskHistory: DiskHistoryEntry[];
+    setSelectedDiskHistory: (sdh: DiskHistoryEntry[]) => void
 };
 
-export const Runner = ({ 
-    setResetApp, 
-    windowWidth, 
-    windowHeight, 
-    defaultWidth, 
-    defaultHeight, 
-    isClearCacheDialogOpen, 
+export const Runner = ({
+    setResetApp,
+    windowWidth,
+    windowHeight,
+    defaultWidth,
+    defaultHeight,
+    isClearCacheDialogOpen,
     setIsClearCacheDialogOpen,
-    handleClearCacheConfirm
- }: RunnerProps) => {
+    handleClearCacheConfirm,
+    selectedDiskHistory,
+    setSelectedDiskHistory
+}: RunnerProps) => {
 
     const [currentWidth, setCurrentWidth] = useState<number>(defaultWidth || windowWidth);
 
@@ -75,6 +80,7 @@ export const Runner = ({
     const [openMainWindow, setOpenMainWindow] = useState<"idle" | "open" | "error">("idle");
     const [titleString, setTitleString] = useState<string>("");
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
+
 
     const runtimeDir = proc?.env?.XDG_RUNTIME_DIR || `/run/user/${proc.getuid ? proc.getuid() : "1000"}`;
     const ctrlFile = path.join(runtimeDir, "hdsentinel-ctrl");
@@ -321,6 +327,19 @@ export const Runner = ({
                         visibility={settingsDialogVisibility}
                         contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
+                        onImportSuccess={() => {
+                            const freshHistory = localConfigStore.getHistory();
+
+                            if (Array.isArray(freshHistory)) {
+                                setSelectedDiskHistory(freshHistory);
+                            }
+                            else if (freshHistory && typeof freshHistory === "object") {
+                                const valuesAsArray = Object.values(freshHistory).flat() as DiskHistoryEntry[];
+                                setSelectedDiskHistory(valuesAsArray);
+                            } else {
+                                setSelectedDiskHistory([]);
+                            }
+                        }}
                     />
                 )}
 
@@ -344,6 +363,8 @@ export const Runner = ({
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
                     currentWidth={currentWidth}
+                    selectedDiskHistory={selectedDiskHistory}
+                    setSelectedDiskHistory={setSelectedDiskHistory}
                     settingsButton={
                         <SettingsMenuButton
                             onOpenSettings={() => setSettingsDialogVisibility(true)}

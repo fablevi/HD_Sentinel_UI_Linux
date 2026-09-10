@@ -16,6 +16,7 @@ type DriveContentViewProps = {
     isSidebarOpen: boolean;
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;
     selectedDiskHistory: DiskHistoryEntry[];
+    setSelectedDiskHistory: (sdh: DiskHistoryEntry[])=>void
 }
 
 export default function DriveContentView({
@@ -25,7 +26,8 @@ export default function DriveContentView({
     load_Drive_Window_Type,
     isSidebarOpen,
     setIsSidebarOpen,
-    selectedDiskHistory
+    selectedDiskHistory,
+    setSelectedDiskHistory
 }: DriveContentViewProps) {
 
     return (
@@ -37,7 +39,9 @@ export default function DriveContentView({
                 selected_Physical_Disk_Information?.SCSI_Information?.Removable === "Supported [1]" ?
                     <RemoveableDriveView selected_Physical_Disk_Information={selected_Physical_Disk_Information} />
                     :
-                    <TabulatedView selected_Physical_Disk_Information={selected_Physical_Disk_Information} selectedDiskHistory={selectedDiskHistory}/>
+                    <TabulatedView selected_Physical_Disk_Information={selected_Physical_Disk_Information} 
+                    selectedDiskHistory={selectedDiskHistory}
+                   />
                 :
             load_Drive_Window_Type === "Partition" ? 
                 <DiskView selected_Partition_Information={selected_Partition_Information}/> 

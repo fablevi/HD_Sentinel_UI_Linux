@@ -8,7 +8,7 @@ import { languageType } from "../components/Languages/language.model.js";
 type Settings = {
   scheme: number;
   language: languageType;
-  refreshInterval: number; // ÚJ MEZŐ (másodpercben)
+  refreshInterval: number;
   [key: string]: any;
 };
 
@@ -32,24 +32,30 @@ class ConfigStore extends EventEmitter {
 
   constructor() {
     super();
+    this.settings = { ...DEFAULT_SETTINGS };
+    this.measure = { ...DEFAULT_MEASURE };
     this.ensureFiles();
     
-    const rawSettings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
-    this.settings = { ...DEFAULT_SETTINGS, ...rawSettings };
-    
+    this.settings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
     this.measure = this.readJSON(MEASURE_PATH, DEFAULT_MEASURE);
   }
 
   ensureFiles() {
     try {
-      if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+      if (!fs.existsSync(CONFIG_DIR)) {
+        fs.mkdirSync(CONFIG_DIR, { recursive: true });
+      }
 
       if (!fs.existsSync(SETTINGS_PATH)) {
+        this.settings = { ...DEFAULT_SETTINGS };
         fs.writeFileSync(SETTINGS_PATH, JSON.stringify(DEFAULT_SETTINGS, null, 2), { encoding: "utf8" });
+        this.emit("change", { type: "settings", value: this.settings });
       }
 
       if (!fs.existsSync(MEASURE_PATH)) {
-        fs.writeFileSync(MEASURE_PATH, JSON.stringify(DEFAULT_MEASURE, null, 2), { encoding: "utf8" });
+        this.measure = {};
+        fs.writeFileSync(MEASURE_PATH, JSON.stringify({}, null, 2), { encoding: "utf8" });
+        this.emit("change", { type: "measure", value: this.measure });
       }
     } catch (err) {
       console.error("ConfigStore.ensureFiles error:", err);
@@ -58,16 +64,24 @@ class ConfigStore extends EventEmitter {
 
   readJSON(filePath: string, fallback: any) {
     try {
+      if (!fs.existsSync(filePath)) {
+        this.ensureFiles();
+        return filePath === MEASURE_PATH ? {} : fallback;
+      }
       const raw = fs.readFileSync(filePath, { encoding: "utf8" });
       return JSON.parse(raw);
     } catch (err) {
-      console.warn(`Failed to read/parse ${filePath}, using fallback.`, err);
+      console.warn(`Failed to read/parse ${filePath}, using clean fallback.`, err);
+      if (filePath === MEASURE_PATH) {
+        this.measure = {};
+      }
       return fallback;
     }
   }
 
   writeJSON(filePath: string, value: any) {
     try {
+      this.ensureFiles();
       fs.writeFileSync(filePath, JSON.stringify(value, null, 2), { encoding: "utf8" });
     } catch (err) {
       console.error(`Failed to write ${filePath}:`, err);
@@ -87,10 +101,17 @@ class ConfigStore extends EventEmitter {
   }
 
   getMeasure() {
+    if (!fs.existsSync(MEASURE_PATH)) {
+      this.measure = {};
+      this.ensureFiles();
+    }
     return this.measure;
   }
 
   setMeasure(updater: Measure | ((prev: Measure) => Measure)) {
+    if (!fs.existsSync(MEASURE_PATH)) {
+      this.measure = {};
+    }
     const newMeasure = typeof updater === "function" ? (updater as any)(this.measure) : updater;
     this.measure = newMeasure;
     this.writeJSON(MEASURE_PATH, this.measure);
@@ -98,15 +119,24 @@ class ConfigStore extends EventEmitter {
     return this.measure;
   }
 
+  getHistory() {
+    return this.getMeasure();
+  }
+
+  saveHistory(data: any) {
+    this.measure = data;
+    this.writeJSON(MEASURE_PATH, this.measure);
+    this.emit("change", { type: "measure", value: this.measure });
+  }
+
   reload() {
-    const rawSettings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
-    this.settings = { ...DEFAULT_SETTINGS, ...rawSettings };
+    this.ensureFiles();
+    this.settings = this.readJSON(SETTINGS_PATH, DEFAULT_SETTINGS);
     this.measure = this.readJSON(MEASURE_PATH, DEFAULT_MEASURE);
     this.emit("change", { type: "reload" });
   }
 }
 
-// Singleton store shared across imports
 const store = new ConfigStore();
 
 export function useLocalConfig() {

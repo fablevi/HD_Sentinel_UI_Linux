@@ -21,6 +21,7 @@ import AboutDialog from "../Dialogs/AboutDialog.js";
 import { openCacheFolder } from "../../helper/openFolder.js";
 import { clearCacheFolder } from "../../helper/clearCache.js";
 import ClearCacheDialog from "../Dialogs/ClearCacheDialog.js";
+import { DiskHistoryEntry } from "../MainComponent.js";
 
 type AppProps = {
     setResetApp: (reset: boolean) => void
@@ -36,6 +37,8 @@ export const App = ({ setResetApp }: AppProps) => {
 
     const [settingsDialogVisibility, setSettingsDialogVisibility] = useState<boolean>(false);
     const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
+    
+    const [selectedDiskHistory, setSelectedDiskHistory] = useState<DiskHistoryEntry[]>([]);
 
     const [isClearCacheDialogOpen, setIsClearCacheDialogOpen] = useState<boolean>(false);
 
@@ -165,6 +168,10 @@ export const App = ({ setResetApp }: AppProps) => {
         _reloadHDSentinelSearch();
     };
 
+    useEffect(()=>{
+        console.log(selectedDiskHistory)
+    },[selectedDiskHistory])
+
     if (_isHDSentinelExecutableIsAvailable === "loading") {
         return null;
     }
@@ -280,5 +287,7 @@ export const App = ({ setResetApp }: AppProps) => {
         isClearCacheDialogOpen={isClearCacheDialogOpen}    
         setIsClearCacheDialogOpen={setIsClearCacheDialogOpen}
         handleClearCacheConfirm={handleClearCacheConfirm}
+        selectedDiskHistory={selectedDiskHistory}
+        setSelectedDiskHistory={setSelectedDiskHistory}
     />;
 };

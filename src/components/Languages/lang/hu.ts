@@ -9,7 +9,15 @@ export const hu: uiTextType = {
         language: "Nyelv",
         refreshIntervalTitle: "Frissítési intervallum (mp)",
         refreshIntervalSubtitle: "Adatok kiírásának és újraolvasásának sűrűsége",
-        cache: "Cache"
+        cache: "Cache",
+        dataManagementTitle: "Mérési adatok kezelése",
+        exportHistory: "Előzmények exportálása",
+        exportHistorySubtitle: "Mérési adatbázis mentése JSON fájlba",
+        importHistory: "Előzmények importálása",
+        importHistorySubtitle: "Korábban mentett JSON adatbázis betöltése",
+        exportSuccess: "Adatok sikeresen exportálva!",
+        importSuccess: "Adatok sikeresen importálva!",
+        fileError: "Hiba történt a fájl kezelése során!"
     },
     about: {
         title: "Névjegy",

@@ -11,6 +11,14 @@ export type uiTextType = {
         refreshIntervalTitle: string;
         refreshIntervalSubtitle: string;
         cache: string;
+        dataManagementTitle: string;
+        exportHistory: string;
+        exportHistorySubtitle: string;
+        importHistory: string;
+        importHistorySubtitle: string;
+        exportSuccess: string;
+        importSuccess: string;
+        fileError: string;
     };
     about: {
         title: string;

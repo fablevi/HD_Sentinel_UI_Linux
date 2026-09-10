@@ -15,6 +15,8 @@ type MainComponentProps = {
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;
     settingsButton: ReactNode;
     currentWidth: number;
+    selectedDiskHistory: DiskHistoryEntry[];
+    setSelectedDiskHistory: (sdh: DiskHistoryEntry[])=>void
 };
 
 export type DiskHistoryEntry = {
@@ -37,7 +39,9 @@ export default function MainComponent({
     isSidebarOpen, 
     setIsSidebarOpen, 
     settingsButton,
-    currentWidth
+    currentWidth,
+    selectedDiskHistory,
+    setSelectedDiskHistory
 }: MainComponentProps) {
 
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
@@ -45,7 +49,6 @@ export default function MainComponent({
     const [selected_RamInfo_by_Device, set_Selected_RamInfo_by_Device] = useState<MemoryDevice | undefined>(ramData?.devices[0]);
     const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk" | "Partition" | "Ram">("Disk");
 
-    const [selectedDiskHistory, setSelectedDiskHistory] = useState<DiskHistoryEntry[]>([]);
 
     //useEffect(()=>{console.log(selectedDiskHistory)},[selectedDiskHistory])
 
@@ -170,6 +173,7 @@ export default function MainComponent({
                         isSidebarOpen={isSidebarOpen}
                         setIsSidebarOpen={setIsSidebarOpen}
                         selectedDiskHistory={selectedDiskHistory}
+                        setSelectedDiskHistory={setSelectedDiskHistory}
                     />
                 </AdwToolbarView>
             }

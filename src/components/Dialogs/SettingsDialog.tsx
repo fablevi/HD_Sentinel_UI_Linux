@@ -2,6 +2,7 @@ import * as Adw from "@gtkx/jsx/adw";
 import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Adw$ from "@gtkx/gi/adw";
+import * as Gio$ from "@gtkx/gi/gio";
 
 import React, { useEffect, useState } from "react";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
@@ -12,9 +13,10 @@ type SettingsDialogType = {
     visibility: boolean;
     contentWidth: number;
     onCloseFn: () => void;
+    onImportSuccess?: () => void;
 };
 
-export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: SettingsDialogType) {
+export default function SettingsDialog({ visibility, contentWidth, onCloseFn, onImportSuccess }: SettingsDialogType) {
 
     const { TEXT } = useTranslation();
 
@@ -50,11 +52,78 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const dialog = Gtk$.FileDialog.new();
+            dialog.setTitle(TEXT.settings.exportHistory);
+            dialog.setInitialName("hdsentinel_history.json");
+
+            const file = await dialog.save(null, null);
+
+            if (file) {
+                const historyData = localConfigStore.getHistory();
+                const jsonString = JSON.stringify(historyData, null, 2);
+                const bytes = new TextEncoder().encode(jsonString);
+
+                file.replaceContents(
+                    Array.from(bytes),
+                    null,
+                    false,
+                    Gio$.FileCreateFlags.NONE,
+                    null
+                );
+            }
+        } catch {}
+    };
+
+    const handleImport = async () => {
+        try {
+            const dialog = Gtk$.FileDialog.new();
+            dialog.setTitle(TEXT.settings.importHistory);
+
+            const filter = Gtk$.FileFilter.new();
+            filter.setName("JSON (*.json)");
+            filter.addPattern("*.json");
+
+            const gtype = (filter as any).gType 
+                || (filter as any).constructor?.$gtype 
+                || (Gtk$.FileFilter as any).$gtype;
+
+            if (gtype) {
+                const filters = Gio$.ListStore.new(gtype);
+                filters.append(filter);
+                dialog.setFilters(filters);
+            }
+
+            const file = await dialog.open(null, null);
+
+            if (file) {
+                const res = file.loadContents(null);
+                const contents = Array.isArray(res) ? res[1] : res;
+
+                if (contents) {
+                    const jsonString = new TextDecoder().decode(new Uint8Array(contents));
+                    const importedData = JSON.parse(jsonString);
+
+                    // 1. Mentjük az új történetet a store-ba
+                    localConfigStore.saveHistory(importedData);
+
+                    // 2. Meghívjuk a külső kikérdező callbacket 1x
+                    if (typeof onImportSuccess === "function") {
+                        onImportSuccess();
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Import error:", err);
+        }
+    };
+
     return (
         <Adw.AdwDialog
             visible={visibility}
             contentWidth={contentWidth}
-            contentHeight={360}
+            contentHeight={480}
             onClosed={() => onCloseFn()}
         >
             <Adw.AdwToolbarView
@@ -142,6 +211,35 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn }: 
                                             onChanged={(self) => handleIntervalChange(self.getText())}
                                         />
                                     }
+                                />
+                            </Adw.AdwActionRow>
+                        </Adw.AdwPreferencesGroup>
+
+                        <Adw.AdwPreferencesGroup
+                            marginStart={20}
+                            marginEnd={20}
+                            marginTop={20}
+                            title={TEXT.settings.dataManagementTitle}
+                        >
+                            <Adw.AdwActionRow
+                                title={TEXT.settings.exportHistory}
+                                subtitle={TEXT.settings.exportHistorySubtitle}
+                            >
+                                <Gtk.GtkButton
+                                    label="Export"
+                                    valign={Gtk$.Align.CENTER}
+                                    onClicked={handleExport}
+                                />
+                            </Adw.AdwActionRow>
+                            
+                            <Adw.AdwActionRow
+                                title={TEXT.settings.importHistory}
+                                subtitle={TEXT.settings.importHistorySubtitle}
+                            >
+                                <Gtk.GtkButton
+                                    label="Import"
+                                    valign={Gtk$.Align.CENTER}
+                                    onClicked={handleImport}
                                 />
                             </Adw.AdwActionRow>
                         </Adw.AdwPreferencesGroup>

@@ -9,7 +9,15 @@ export const en: uiTextType = {
         language: "Language",
         refreshIntervalTitle: "Refresh interval (sec)",
         refreshIntervalSubtitle: "Frequency of writing and reading measured data",
-        cache: "Cache"
+        cache: "Cache",
+        dataManagementTitle: "Data Management",
+        exportHistory: "Export History",
+        exportHistorySubtitle: "Save measurement database to a JSON file",
+        importHistory: "Import History",
+        importHistorySubtitle: "Load previously saved JSON database",
+        exportSuccess: "Data exported successfully!",
+        importSuccess: "Data imported successfully!",
+        fileError: "An error occurred while handling the file!"
     },
     about: {
         title: "About",
