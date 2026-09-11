@@ -4,7 +4,7 @@ import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Adw$ from "@gtkx/gi/adw";
 import * as Gio$ from "@gtkx/gi/gio";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
 import { LANGUAGE_OPTIONS } from "../Languages/language.model.js";
 import { useTranslation } from "../Languages/useTranslation.js";
@@ -27,6 +27,19 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
     const [refreshInterval, setRefreshInterval] = useState<string>(() =>
         String(localConfigStore.getSettings().refreshInterval || 5)
     );
+
+    const languageModel = useMemo(
+        () => Gtk$.StringList.new(LANGUAGE_OPTIONS),
+        []
+    );
+
+    const schemeModel = useMemo(() => {
+        return Gtk$.StringList.new(
+            Object.keys(Adw$.ColorScheme).filter(
+                (key) => isNaN(Number(key))
+            )
+        );
+    }, []);
 
     useEffect(() => {
         const styleManager = Adw$.StyleManager.getDefault();
@@ -52,6 +65,10 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
         }
     };
 
+    useEffect(() => {
+        console.log(localConfigStore.getSettings())
+    }, [localConfigStore.getSettings()])
+
     const handleExport = async () => {
         try {
             const dialog = Gtk$.FileDialog.new();
@@ -73,7 +90,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                     null
                 );
             }
-        } catch {}
+        } catch { }
     };
 
     const handleImport = async () => {
@@ -85,8 +102,8 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
             filter.setName("JSON (*.json)");
             filter.addPattern("*.json");
 
-            const gtype = (filter as any).gType 
-                || (filter as any).constructor?.$gtype 
+            const gtype = (filter as any).gType
+                || (filter as any).constructor?.$gtype
                 || (Gtk$.FileFilter as any).$gtype;
 
             if (gtype) {
@@ -105,10 +122,8 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                     const jsonString = new TextDecoder().decode(new Uint8Array(contents));
                     const importedData = JSON.parse(jsonString);
 
-                    // 1. Mentjük az új történetet a store-ba
                     localConfigStore.saveHistory(importedData);
 
-                    // 2. Meghívjuk a külső kikérdező callbacket 1x
                     if (typeof onImportSuccess === "function") {
                         onImportSuccess();
                     }
@@ -157,9 +172,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                         >
                             <Adw.AdwComboRow
                                 title={TEXT.settings.appSchemeStyle}
-                                model={Gtk$.StringList.new(Object.keys(Adw$.ColorScheme).filter(
-                                    (key) => isNaN(Number(key))
-                                ))}
+                                model={schemeModel}
                                 selected={appScheme}
                                 onNotifySelected={(value) => {
                                     Adw$.StyleManager.getDefault().setColorScheme(value || 0);
@@ -176,7 +189,8 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                         >
                             <Adw.AdwComboRow
                                 title={TEXT.settings.language}
-                                model={Gtk$.StringList.new(LANGUAGE_OPTIONS)}
+                                //model={Gtk$.StringList.new(LANGUAGE_OPTIONS)}
+                                model={languageModel}
                                 selected={LANGUAGE_OPTIONS.indexOf(localConfigStore.getSettings().language || "en")}
                                 onNotifySelected={(selectedIndex) => {
                                     const selectedLang = LANGUAGE_OPTIONS[selectedIndex ?? 0] || "en";
@@ -231,7 +245,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                                     onClicked={handleExport}
                                 />
                             </Adw.AdwActionRow>
-                            
+
                             <Adw.AdwActionRow
                                 title={TEXT.settings.importHistory}
                                 subtitle={TEXT.settings.importHistorySubtitle}

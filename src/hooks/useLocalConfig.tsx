@@ -169,7 +169,9 @@ export function useLocalConfig() {
     setMeasureState(updated);
   };
 
-  const reload = () => store.reload();
+  const reload = () => {
+    store.reload()
+  };
 
   return { settings, setSettings, measure, setMeasure, reload } as const;
 }
