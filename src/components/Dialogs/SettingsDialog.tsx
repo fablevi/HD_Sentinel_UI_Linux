@@ -65,10 +65,6 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
         }
     };
 
-    useEffect(() => {
-        console.log(localConfigStore.getSettings())
-    }, [localConfigStore.getSettings()])
-
     const handleExport = async () => {
         try {
             const dialog = Gtk$.FileDialog.new();

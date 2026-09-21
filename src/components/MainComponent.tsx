@@ -49,9 +49,6 @@ export default function MainComponent({
     const [selected_RamInfo_by_Device, set_Selected_RamInfo_by_Device] = useState<MemoryDevice | undefined>(ramData?.devices[0]);
     const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk" | "Partition" | "Ram">("Disk");
 
-
-    //useEffect(()=>{console.log(selectedDiskHistory)},[selectedDiskHistory])
-
     const isSmallWindow = currentWidth < 700;
 
     useEffect(() => {

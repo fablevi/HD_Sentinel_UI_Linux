@@ -315,6 +315,11 @@ export const Runner = ({
                 defaultWidth={defaultWidth}
                 defaultHeight={defaultHeight}
                 onCloseRequest={handleClose}
+                onNotifyMaximized={(value: boolean | null, self: Gtk$.ApplicationWindow)=>{
+                    setTimeout(() => {
+                        setCurrentWidth(self.getWidth())   
+                    }, 10);              
+                }}
                 onNotifyDefaultWidth={(w) => {
                     if (typeof w === "number" && w > 0) {
                         setCurrentWidth(w);

@@ -21,7 +21,7 @@ const MEASURE_PATH = path.join(CONFIG_DIR, "measure.json");
 const DEFAULT_SETTINGS: Settings = {
   scheme: 0,
   language: "en",
-  refreshInterval: 600
+  refreshInterval: 1
 };
 
 const DEFAULT_MEASURE: Measure = {};

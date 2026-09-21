@@ -168,10 +168,6 @@ export const App = ({ setResetApp }: AppProps) => {
         _reloadHDSentinelSearch();
     };
 
-    useEffect(()=>{
-        console.log(selectedDiskHistory)
-    },[selectedDiskHistory])
-
     if (_isHDSentinelExecutableIsAvailable === "loading") {
         return null;
     }
