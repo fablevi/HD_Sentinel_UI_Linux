@@ -1,6 +1,8 @@
 import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
-import { useRef } from "react";
+import * as Gio from "@gtkx/gi/gio";
+import * as Adw$ from "@gtkx/gi/adw";
+import { RefObject, useRef } from "react";
 import { useTranslation } from "../Languages/useTranslation.js";
 
 type SettingsMenuButtonProps = {
@@ -9,6 +11,7 @@ type SettingsMenuButtonProps = {
     onOpenAbout?: () => void;
     onSelectOpenFolder?: () => void;
     onClearCache?: () => void;
+    adwWindow: RefObject<Adw$.ApplicationWindow | null>
 };
 
 export default function SettingsMenuButton({
@@ -17,6 +20,7 @@ export default function SettingsMenuButton({
     onOpenAbout,
     onSelectOpenFolder,
     onClearCache,
+    adwWindow
 }: SettingsMenuButtonProps) {
     const { TEXT } = useTranslation();
     const popoverRef = useRef<Gtk$.Popover | null>(null);
@@ -30,6 +34,40 @@ export default function SettingsMenuButton({
         <Gtk.GtkMenuButton
             iconName="settings-configure-symbolic"
             focusable={false}
+            onRealize={(self) => {
+                if (!adwWindow) return;
+                console.log("Window is ready")
+                const app = adwWindow.current?.getApplication();
+                if (!app) return;
+                console.log("App is ready: ", app)
+
+                const registerAppAction = (name: string, callback?: () => void) => {
+                    if (!callback) return;
+                    try {
+                        console.log(name)
+                        const action = new Gio.SimpleAction({ name });
+                        action.on("activate", () => callback());
+                        app.addAction(action);
+                    } catch (e) {
+                        
+                    }
+                };
+
+                registerAppAction("open-folder", onSelectOpenFolder);
+                registerAppAction("clear-cache", onClearCache);
+                registerAppAction("open-settings", onOpenSettings);
+                registerAppAction("open-about", onOpenAbout);
+
+                const menu = new Gio.Menu();
+                if (onSelectOpenFolder) menu.append(TEXT.common.openFolder, "app.open-folder");
+                if (!noClearCacheSettingsAvailable && onClearCache) menu.append(TEXT.common.clearCache, "app.clear-cache");
+                if (!onOpenSettings) menu.append(TEXT.settings.title, "app.open-settings");
+                if (onOpenAbout) menu.append(TEXT.about.title, "app.open-about");
+
+                app.setMenubar(menu);
+                console.log("Menubar:", app.getMenubar());
+                console.log("Menu items:", menu.getNItems());
+            }}
             popover={
                 <Gtk.GtkPopover ref={popoverRef} autohide={true}>
                     <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL}>

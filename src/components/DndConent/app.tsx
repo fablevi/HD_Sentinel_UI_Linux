@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { GtkBox, GtkLabel, GtkLinkButton, GtkDropTarget, GtkButton } from "@gtkx/jsx/gtk";
 import { AdwApplicationWindow, AdwHeaderBar, AdwToolbarView, AdwStyleManager } from "@gtkx/jsx/adw";
 import { File } from "@gtkx/gi/gio";
@@ -28,6 +28,9 @@ type AppProps = {
 }
 
 export const App = ({ setResetApp }: AppProps) => {
+
+    const adwWindow = useRef<Adw$.ApplicationWindow | null>(null);
+
     const { TEXT } = useTranslation();
 
     const windowWidth = 400;
@@ -175,6 +178,7 @@ export const App = ({ setResetApp }: AppProps) => {
     if (_isHDSentinelExecutableIsAvailable === "notfound") {
         return (
             <AdwApplicationWindow
+                ref={adwWindow}
                 title={"HD Sentinel"}
                 widthRequest={windowWidth}
                 heightRequest={windowHeight}
@@ -196,6 +200,7 @@ export const App = ({ setResetApp }: AppProps) => {
                                     onSelectOpenFolder={() => {
                                         openCacheFolder()
                                     }}
+                                    adwWindow={adwWindow}
                                 />
                             }
                         />

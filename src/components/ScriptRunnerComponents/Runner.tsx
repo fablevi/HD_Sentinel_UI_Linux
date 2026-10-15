@@ -8,6 +8,7 @@ import {
 import { GtkButton, GtkBox } from "@gtkx/jsx/gtk";
 import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
+import * as Adw$ from "@gtkx/gi/adw";
 import { quit } from "@gtkx/react";
 
 // @ts-ignore
@@ -67,6 +68,9 @@ export const Runner = ({
     selectedDiskHistory,
     setSelectedDiskHistory
 }: RunnerProps) => {
+
+    const adwWindowOpen = useRef<Adw$.ApplicationWindow | null>(null);
+    const adwWindowError = useRef<Adw$.ApplicationWindow | null>(null);
 
     const [currentWidth, setCurrentWidth] = useState<number>(defaultWidth || windowWidth);
 
@@ -315,6 +319,7 @@ export const Runner = ({
                 defaultWidth={defaultWidth}
                 defaultHeight={defaultHeight}
                 onCloseRequest={handleClose}
+                ref={adwWindowOpen}
                 onNotifyMaximized={(value: boolean | null, self: Gtk$.ApplicationWindow)=>{
                     setTimeout(() => {
                         setCurrentWidth(self.getWidth())   
@@ -380,6 +385,7 @@ export const Runner = ({
                             onSelectOpenFolder={() => {
                                 openCacheFolder()
                             }}
+                            adwWindow={adwWindowOpen}
                         />
                     }
                 />
@@ -395,6 +401,7 @@ export const Runner = ({
             defaultWidth={defaultWidth}
             defaultHeight={defaultHeight}
             onCloseRequest={handleClose}
+            ref={adwWindowError}
         >
             <AdwToolbarView
                 topBar={
@@ -409,6 +416,7 @@ export const Runner = ({
                                 onSelectOpenFolder={() => {
                                     openCacheFolder()
                                 }}
+                                adwWindow={adwWindowError}
                             />
                         }
                     />
