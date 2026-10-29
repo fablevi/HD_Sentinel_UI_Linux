@@ -46,11 +46,11 @@ echo "=== 4. Kötelező metaadatok (Desktop fájl és ikon hivatkozás) ==="
 cat << 'EOF' > AppDir/hd-sentinel.desktop
 [Desktop Entry]
 Type=Application
-Name=HDSentinelUI
+Name=HDSentinel
 Exec=AppRun
 Icon=hd-sentinel
 Categories=Utility;System;
-Comment=Hard Disk Sentinel UI with React & GTK4
+Comment=Hardware checking utility
 Terminal=false
 EOF
 
