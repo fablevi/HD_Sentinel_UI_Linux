@@ -1,5 +1,9 @@
 export type languageType = "en" | "hu";
 export const LANGUAGE_OPTIONS: languageType[] = ["en", "hu"];
+export const LANGUAGE_LABELS: Record<languageType, string> = {
+  en: "English",
+  hu: "Magyar",
+};
 
 export type uiTextType = {
     settings: {

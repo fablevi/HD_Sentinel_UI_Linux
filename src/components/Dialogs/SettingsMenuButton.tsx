@@ -2,6 +2,7 @@ import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Gio from "@gtkx/gi/gio";
 import * as Adw$ from "@gtkx/gi/adw";
+import * as $Gtk from "@gtkx/gi/gtk"
 import { RefObject, useRef } from "react";
 import { useTranslation } from "../Languages/useTranslation.js";
 
@@ -15,7 +16,7 @@ type SettingsMenuButtonProps = {
 };
 
 export default function SettingsMenuButton({
-    noClearCacheSettingsAvailable= false,
+    noClearCacheSettingsAvailable = false,
     onOpenSettings,
     onOpenAbout,
     onSelectOpenFolder,
@@ -32,7 +33,7 @@ export default function SettingsMenuButton({
 
     return (
         <Gtk.GtkMenuButton
-            iconName="settings-configure-symbolic"
+            iconName="menu_new-symbolic"
             focusable={false}
             onRealize={(self) => {
                 if (!adwWindow) return;
@@ -49,7 +50,7 @@ export default function SettingsMenuButton({
                         action.on("activate", () => callback());
                         app.addAction(action);
                     } catch (e) {
-                        
+
                     }
                 };
 
@@ -72,29 +73,43 @@ export default function SettingsMenuButton({
                 <Gtk.GtkPopover ref={popoverRef} autohide={true}>
                     <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL}>
                         <Gtk.GtkButton
-                            label={TEXT.common.openFolder}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onSelectOpenFolder)}
-                        />
+                        >
+                            <Gtk.GtkBox halign={Gtk$.Align.START}>
+                                <Gtk.GtkLabel label={TEXT.common.openFolder} />
+                            </Gtk.GtkBox>
+                        </Gtk.GtkButton>
                         {!noClearCacheSettingsAvailable && <Gtk.GtkButton
-                            label={TEXT.common.clearCache}
                             cssClasses={["flat", "error"]}
                             focusable={false}
                             onClicked={() => handleAction(onClearCache)}
-                        />}
+                        >
+                            <Gtk.GtkBox halign={Gtk$.Align.START}>
+                                <Gtk.GtkLabel label={TEXT.common.clearCache} />
+                            </Gtk.GtkBox>
+                        </Gtk.GtkButton>}
                         <Gtk.GtkButton
                             label={TEXT.settings.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenSettings)}
-                        />
+                        >
+                            <Gtk.GtkBox halign={Gtk$.Align.START}>
+                                <Gtk.GtkLabel label={TEXT.settings.title} />
+                            </Gtk.GtkBox>
+                        </Gtk.GtkButton>
                         <Gtk.GtkButton
                             label={TEXT.about.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenAbout)}
-                        />
+                        >
+                            <Gtk.GtkBox halign={Gtk$.Align.START}>
+                                <Gtk.GtkLabel label={TEXT.about.title} />
+                            </Gtk.GtkBox>
+                        </Gtk.GtkButton>
                     </Gtk.GtkBox>
                 </Gtk.GtkPopover>
             }

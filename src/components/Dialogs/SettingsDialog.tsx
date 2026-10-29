@@ -6,7 +6,7 @@ import * as Gio$ from "@gtkx/gi/gio";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
-import { LANGUAGE_OPTIONS } from "../Languages/language.model.js";
+import { LANGUAGE_LABELS, LANGUAGE_OPTIONS } from "../Languages/language.model.js";
 import { useTranslation } from "../Languages/useTranslation.js";
 
 type SettingsDialogType = {
@@ -29,7 +29,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
     );
 
     const languageModel = useMemo(
-        () => Gtk$.StringList.new(LANGUAGE_OPTIONS),
+        () => Gtk$.StringList.new(LANGUAGE_OPTIONS.map((lang) => LANGUAGE_LABELS[lang])),
         []
     );
 
@@ -130,6 +130,10 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
         }
     };
 
+    const terminalCommandAddOrRemove = () => {
+
+    }
+
     return (
         <Adw.AdwDialog
             visible={visibility}
@@ -185,7 +189,6 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                         >
                             <Adw.AdwComboRow
                                 title={TEXT.settings.language}
-                                //model={Gtk$.StringList.new(LANGUAGE_OPTIONS)}
                                 model={languageModel}
                                 selected={LANGUAGE_OPTIONS.indexOf(localConfigStore.getSettings().language || "en")}
                                 onNotifySelected={(selectedIndex) => {
@@ -222,6 +225,17 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                                         />
                                     }
                                 />
+                            </Adw.AdwActionRow>
+                        </Adw.AdwPreferencesGroup>
+
+                        <Adw.AdwPreferencesGroup>
+                            <Adw.AdwActionRow
+                            marginStart={20}
+                            marginEnd={20}
+                            marginTop={20}
+                            title={TEXT.settings.cache}
+                            >
+
                             </Adw.AdwActionRow>
                         </Adw.AdwPreferencesGroup>
 
