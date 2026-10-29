@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# Hibák esetén azonnal álljon le a szkript
+# Exit script immediately on errors
 set -e
 
 npm run build
 
-echo "=== 1. AppDir struktúra takarítása és létrehozása ==="
+echo "=== 1. Cleaning and creating AppDir structure ==="
 rm -rf AppDir
 mkdir -p AppDir/usr/bin
 mkdir -p AppDir/exec
 
-echo "=== 2. Fájlok átmásolása (dist és wrapper script) ==="
-# Bemásoljuk a buildelt dist mappát
+echo "=== 2. Copying files (dist and wrapper script) ==="
+# Copy the built dist folder
 cp -r dist AppDir/
 
-# Bemásoljuk a hdsentinel-wrapper.sh szkriptet az exec mappába
+# Copy the hdsentinel-wrapper.sh script into the exec folder
 cp -a exec/hdsentinel-wrapper.sh AppDir/exec/hdsentinel-wrapper.sh
 
-# Kifejezett futtatási jog megadása a wrapper scriptre
+# Grant explicit execution permissions to the wrapper script
 chmod 755 AppDir/exec/hdsentinel-wrapper.sh
 chmod +x AppDir/exec/hdsentinel-wrapper.sh
 
-echo "=== 3. AppRun indítószkript létrehozása ==="
+echo "=== 3. Creating AppRun startup script ==="
 cat << 'EOF' > AppDir/AppRun
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
@@ -33,16 +33,16 @@ if [ "$EUID" -eq 0 ]; then
     export XDG_RUNTIME_DIR=/run/user/$(logname -i 2>/dev/null || id -u ${SUDO_USER:-root})
 fi
 
-# Munkakönyvtár átállítása az AppImage gyökerére
+# Change working directory to the root of the AppImage
 cd "${HERE}"
 
-# Továbbítjuk az összes argumentumot a Node felé ($@)
+# Forward all arguments to Node ($@)
 exec node "${HERE}/dist/bundle.js" "$@"
 EOF
 
 chmod 755 AppDir/AppRun
 
-echo "=== 4. Kötelező metaadatok (Desktop fájl és ikon hivatkozás) ==="
+echo "=== 4. Mandatory metadata (Desktop file and icon reference) ==="
 cat << 'EOF' > AppDir/hd-sentinel.desktop
 [Desktop Entry]
 Type=Application
@@ -55,30 +55,30 @@ Terminal=false
 EOF
 
 if [ -f "sata_default_rounded.png" ]; then
-    echo "Ikonként a sata_default_rounded.png használva."
+    echo "Using sata_default_rounded.png as icon."
     cp -a sata_default_rounded.png AppDir/hd-sentinel.png
 elif [ -f "sata_default.png" ]; then
-    echo "Ikonként a sata_default.png használva."
+    echo "Using sata_default.png as icon."
     cp -a sata_default.png AppDir/hd-sentinel.png
 else
-    echo "HIBA: Egyik ikon sem található a gyökérkönyvtárban!"
+    echo "ERROR: Neither icon can be found in the root directory!"
     exit 1
 fi
 
-echo "=== 5. AppImage készítő eszköz ellenőrzése / letöltése ==="
+echo "=== 5. Checking / downloading AppImage creator tool ==="
 if [ ! -f "appimagetool-x86_64.AppImage" ]; then
-    echo "appimagetool nem található, letöltés..."
+    echo "appimagetool not found, downloading..."
     wget -q --show-progress https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
     chmod +x appimagetool-x86_64.AppImage
 fi
 
-echo "=== 6. Csomagolás az appimagetool segítségével ==="
+echo "=== 6. Packaging using appimagetool ==="
 export ARCH=x86_64
 ./appimagetool-x86_64.AppImage AppDir HDSentinelUI-x86_64.AppImage
 
-echo "=== 7. Fájlok rendszerezése ==="
+echo "=== 7. Organizing files ==="
 mkdir -p built_files
 mv HDSentinelUI-x86_64.AppImage built_files/
 
-echo "=== KÉSZ! ==="
+echo "=== DONE! ==="
 ls -l built_files/

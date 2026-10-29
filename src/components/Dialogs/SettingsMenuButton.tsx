@@ -2,13 +2,13 @@ import * as Gtk from "@gtkx/jsx/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Gio from "@gtkx/gi/gio";
 import * as Adw$ from "@gtkx/gi/adw";
-import * as $Gtk from "@gtkx/gi/gtk"
+import * as Gdk$ from "@gtkx/gi/gdk"
 import { RefObject, useRef } from "react";
 import { useTranslation } from "../Languages/useTranslation.js";
 
 type SettingsMenuButtonProps = {
     noClearCacheSettingsAvailable?: boolean
-    onOpenSettings: () => void;
+    onOpenSettings?: () => void;
     onOpenAbout?: () => void;
     onSelectOpenFolder?: () => void;
     onClearCache?: () => void;
@@ -37,32 +37,37 @@ export default function SettingsMenuButton({
             focusable={false}
             onRealize={(self) => {
                 if (!adwWindow) return;
-                console.log("Window is ready")
+                console.log("Window is ready");
                 const app = adwWindow.current?.getApplication();
                 if (!app) return;
-                console.log("App is ready: ", app)
+                console.log("App is ready: ", app);
 
-                const registerAppAction = (name: string, callback?: () => void) => {
+                const registerAppAction = (name: string, callback?: () => void, accel?: string) => {
                     if (!callback) return;
                     try {
-                        console.log(name)
+                        console.log(name);
+                        const actionName = `app.${name}`;
                         const action = new Gio.SimpleAction({ name });
                         action.on("activate", () => callback());
                         app.addAction(action);
-                    } catch (e) {
 
+                        if (accel) {
+                            app.setAccelsForAction(actionName, [accel]);
+                        }
+                    } catch (e) {
+                        // ignore
                     }
                 };
 
-                registerAppAction("open-folder", onSelectOpenFolder);
+                registerAppAction("open-folder", onSelectOpenFolder, "<Control>f");
                 registerAppAction("clear-cache", onClearCache);
-                registerAppAction("open-settings", onOpenSettings);
+                registerAppAction("open-settings", onOpenSettings, "<Control>comma");
                 registerAppAction("open-about", onOpenAbout);
 
                 const menu = new Gio.Menu();
                 if (onSelectOpenFolder) menu.append(TEXT.common.openFolder, "app.open-folder");
                 if (!noClearCacheSettingsAvailable && onClearCache) menu.append(TEXT.common.clearCache, "app.clear-cache");
-                if (!onOpenSettings) menu.append(TEXT.settings.title, "app.open-settings");
+                if (onOpenSettings) menu.append(TEXT.settings.title, "app.open-settings");
                 if (onOpenAbout) menu.append(TEXT.about.title, "app.open-about");
 
                 app.setMenubar(menu);
@@ -77,8 +82,9 @@ export default function SettingsMenuButton({
                             focusable={false}
                             onClicked={() => handleAction(onSelectOpenFolder)}
                         >
-                            <Gtk.GtkBox halign={Gtk$.Align.START}>
-                                <Gtk.GtkLabel label={TEXT.common.openFolder} />
+                            <Gtk.GtkBox orientation={Gtk$.Orientation.HORIZONTAL} spacing={32}>
+                                <Gtk.GtkLabel label={TEXT.common.openFolder} halign={Gtk$.Align.START} hexpand={true} />
+                                <Gtk.GtkLabel label="Ctrl+F" cssClasses={["dim-label", "caption"]} halign={Gtk$.Align.END} />
                             </Gtk.GtkBox>
                         </Gtk.GtkButton>
                         {!noClearCacheSettingsAvailable && <Gtk.GtkButton
@@ -91,17 +97,16 @@ export default function SettingsMenuButton({
                             </Gtk.GtkBox>
                         </Gtk.GtkButton>}
                         <Gtk.GtkButton
-                            label={TEXT.settings.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenSettings)}
                         >
-                            <Gtk.GtkBox halign={Gtk$.Align.START}>
-                                <Gtk.GtkLabel label={TEXT.settings.title} />
+                            <Gtk.GtkBox orientation={Gtk$.Orientation.HORIZONTAL} spacing={32}>
+                                <Gtk.GtkLabel label={TEXT.settings.title} halign={Gtk$.Align.START} hexpand={true} />
+                                <Gtk.GtkLabel label="Ctrl+," cssClasses={["dim-label", "caption"]} halign={Gtk$.Align.END} />
                             </Gtk.GtkBox>
                         </Gtk.GtkButton>
                         <Gtk.GtkButton
-                            label={TEXT.about.title}
                             cssClasses={["flat"]}
                             focusable={false}
                             onClicked={() => handleAction(onOpenAbout)}

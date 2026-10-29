@@ -117,5 +117,5 @@ export const hu: uiTextType = {
         blockSize: "Blokkméret",
         filesCount: "Fájlok száma",
         noPartitions: "Nem találhatók partíciók."
-    },
+    }
 };
