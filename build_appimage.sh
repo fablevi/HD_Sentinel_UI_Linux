@@ -74,8 +74,7 @@ fi
 
 echo "=== 6. Packaging using appimagetool ==="
 export ARCH=x86_64
-./appimagetool-x86_64.AppImage AppDir HDSentinelUI-x86_64.AppImage
-#./appimagetool-x86_64.AppImage -u "gh-releases-zsync|GITHUB_USER|GITHUB_REPO|latest|HDSentinelUI-x86_64.AppImage.zsync" AppDir HDSentinelUI-x86_64.AppImage
+./appimagetool-x86_64.AppImage -u "gh-releases-zsync|fablevi|HD_Sentinel_UI_Linux|latest|HDSentinelUI-x86_64.AppImage.zsync" AppDir HDSentinelUI-x86_64.AppImage
 
 echo "=== 7. Organizing files ==="
 mkdir -p built_files
