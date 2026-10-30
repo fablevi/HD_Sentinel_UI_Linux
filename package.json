@@ -1,38 +1,40 @@
 {
-    "name": "hdsentinel",
-    "version": "0.0.1",
-    "private": true,
-    "type": "module",
-    "imports": {
-        "#data/*": "./data/*"
-    },
-    "scripts": {
-        "dev": "gtkx dev",
-        "build": "gtkx build",
-        "script": "chmod +x build_appimage.sh && ./build_appimage.sh",
-        "codegen": "gtkx codegen",
-        "typecheck": "gtkx codegen && tsc --noEmit",
-        "start": "node dist/bundle.js"
-    },
-    "allowScripts": {
-        "esbuild": true,
-        "@swc/core": true
-    },
-    "dependencies": {
-        "@gtkx/css": "^1.6.0",
-        "@gtkx/react": "^1.6.0",
-        "@gtkx/runtime": "^1.6.0",
-        "fast-xml-parser": "^5.10.1",
-        "react": "^19.2.8"
-    },
-    "devDependencies": {
-        "@gtkx/cli": "^1.6.0",
-        "@gtkx/config": "^1.6.0",
-        "@gtkx/cairo": "^1.6.0",
-        "@types/node": "^26.1.1",
-        "@types/react": "^19.2.17",
-        "@yao-pkg/pkg": "^6.22.0",
-        "typescript": "^7.0.2",
-        "vite": "^8.1.5"
-    }
+  "name": "hdsentinel",
+  "version": "2026.10.30",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#data/*": "./data/*"
+  },
+  "scripts": {
+    "predev": "node set-version.cjs",
+    "dev": "gtkx dev",
+    "prebuild": "node set-version.cjs",
+    "build": "gtkx build",
+    "script": "chmod +x build_appimage.sh && ./build_appimage.sh",
+    "codegen": "gtkx codegen",
+    "typecheck": "gtkx codegen && tsc --noEmit",
+    "start": "node dist/bundle.js"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "@swc/core": true
+  },
+  "dependencies": {
+    "@gtkx/css": "^1.6.0",
+    "@gtkx/react": "^1.6.0",
+    "@gtkx/runtime": "^1.6.0",
+    "fast-xml-parser": "^5.10.1",
+    "react": "^19.2.8"
+  },
+  "devDependencies": {
+    "@gtkx/cli": "^1.6.0",
+    "@gtkx/config": "^1.6.0",
+    "@gtkx/cairo": "^1.6.0",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@yao-pkg/pkg": "^6.22.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
+  }
 }

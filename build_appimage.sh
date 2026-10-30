@@ -37,7 +37,7 @@ fi
 cd "${HERE}"
 
 # Forward all arguments to Node ($@)
-exec node "${HERE}/dist/bundle.js" "$@"
+exec node "${HERE}/dist/bundle.mjs" "$@"
 EOF
 
 chmod 755 AppDir/AppRun

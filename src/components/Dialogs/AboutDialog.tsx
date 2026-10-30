@@ -8,6 +8,8 @@ import { exec } from "child_process";
 import { useTranslation } from "../Languages/useTranslation.js";
 import HDSentinelIcons from "../icons/IconPack.js";
 
+import pkg from "../../../package.json" with { type: "json" };
+
 type AboutDialogProps = {
     visible: boolean;
     contentWidth?: number;
@@ -19,7 +21,7 @@ export default function AboutDialog({ visible, contentWidth = 450, onClose }: Ab
 
     if (!visible) return null;
 
-    const appVersion = process.env.APP_VERSION || "1.0.0";
+    const appVersion = pkg.version;
 
     const openUrl = (url: string) => {
         try {

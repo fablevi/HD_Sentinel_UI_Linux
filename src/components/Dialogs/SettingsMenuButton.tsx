@@ -25,7 +25,6 @@ export default function SettingsMenuButton({
 }: SettingsMenuButtonProps) {
     const { TEXT } = useTranslation();
 
-    // Dinamikusan összeállítjuk a menü szakaszait a props alapján
     const menuSections: any[] = [];
 
     const primarySection: any[] = [];

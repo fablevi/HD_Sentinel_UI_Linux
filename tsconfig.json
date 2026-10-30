@@ -12,5 +12,5 @@
         "outDir": "out-tsc",
         "rootDir": "src"
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "set-version.cjs"]
 }
