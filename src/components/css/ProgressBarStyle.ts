@@ -1,7 +1,6 @@
 import { css } from "@gtkx/css";
 
 export const progressBarStyleDefault = css`
-    max-width: 500px;
     min-width: 270px;
     margin-top: 10px;
     margin-bottom: 15px;

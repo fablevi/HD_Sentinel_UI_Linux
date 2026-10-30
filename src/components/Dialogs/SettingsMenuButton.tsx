@@ -1,18 +1,18 @@
 import * as Gtk from "@gtkx/jsx/gtk";
+import * as Gio from "@gtkx/jsx/gio";
 import * as Gtk$ from "@gtkx/gi/gtk";
-import * as Gio from "@gtkx/gi/gio";
+import * as Gio$ from "@gtkx/gi/gio";
 import * as Adw$ from "@gtkx/gi/adw";
-import * as Gdk$ from "@gtkx/gi/gdk"
-import { RefObject, useRef } from "react";
+import { RefObject } from "react";
 import { useTranslation } from "../Languages/useTranslation.js";
 
 type SettingsMenuButtonProps = {
-    noClearCacheSettingsAvailable?: boolean
+    noClearCacheSettingsAvailable?: boolean;
     onOpenSettings?: () => void;
     onOpenAbout?: () => void;
     onSelectOpenFolder?: () => void;
     onClearCache?: () => void;
-    adwWindow: RefObject<Adw$.ApplicationWindow | null>
+    adwWindow: RefObject<Adw$.ApplicationWindow | null>;
 };
 
 export default function SettingsMenuButton({
@@ -24,30 +24,47 @@ export default function SettingsMenuButton({
     adwWindow
 }: SettingsMenuButtonProps) {
     const { TEXT } = useTranslation();
-    const popoverRef = useRef<Gtk$.Popover | null>(null);
 
-    const handleAction = (callback?: () => void) => {
-        popoverRef.current?.popdown();
-        if (callback) callback();
-    };
+    // Dinamikusan összeállítjuk a menü szakaszait a props alapján
+    const menuSections: any[] = [];
+
+    const primarySection: any[] = [];
+    if (onSelectOpenFolder) {
+        primarySection.push({ label: TEXT.common.openFolder, action: "app.open-folder" });
+    }
+    if (!noClearCacheSettingsAvailable && onClearCache) {
+        primarySection.push({ label: TEXT.common.clearCache, action: "app.clear-cache" });
+    }
+    if (primarySection.length > 0) {
+        menuSections.push({ section: primarySection });
+    }
+
+    const secondarySection: any[] = [];
+    if (onOpenSettings) {
+        secondarySection.push({ label: TEXT.settings.title, action: "app.open-settings" });
+    }
+    if (onOpenAbout) {
+        secondarySection.push({ label: TEXT.about.title, action: "app.open-about" });
+    }
+    if (secondarySection.length > 0) {
+        menuSections.push({ section: secondarySection });
+    }
 
     return (
         <Gtk.GtkMenuButton
-            iconName="menu_new-symbolic"
+            primary
+            iconName="open-menu-symbolic"
             focusable={false}
-            onRealize={(self) => {
+            onRealize={() => {
                 if (!adwWindow) return;
-                console.log("Window is ready");
                 const app = adwWindow.current?.getApplication();
                 if (!app) return;
-                console.log("App is ready: ", app);
 
                 const registerAppAction = (name: string, callback?: () => void, accel?: string) => {
                     if (!callback) return;
                     try {
-                        console.log(name);
                         const actionName = `app.${name}`;
-                        const action = new Gio.SimpleAction({ name });
+                        const action = new Gio$.SimpleAction({ name });
                         action.on("activate", () => callback());
                         app.addAction(action);
 
@@ -63,60 +80,9 @@ export default function SettingsMenuButton({
                 registerAppAction("clear-cache", onClearCache);
                 registerAppAction("open-settings", onOpenSettings, "<Control>comma");
                 registerAppAction("open-about", onOpenAbout);
-
-                const menu = new Gio.Menu();
-                if (onSelectOpenFolder) menu.append(TEXT.common.openFolder, "app.open-folder");
-                if (!noClearCacheSettingsAvailable && onClearCache) menu.append(TEXT.common.clearCache, "app.clear-cache");
-                if (onOpenSettings) menu.append(TEXT.settings.title, "app.open-settings");
-                if (onOpenAbout) menu.append(TEXT.about.title, "app.open-about");
-
-                app.setMenubar(menu);
-                console.log("Menubar:", app.getMenubar());
-                console.log("Menu items:", menu.getNItems());
             }}
-            popover={
-                <Gtk.GtkPopover ref={popoverRef} autohide={true}>
-                    <Gtk.GtkBox orientation={Gtk$.Orientation.VERTICAL}>
-                        <Gtk.GtkButton
-                            cssClasses={["flat"]}
-                            focusable={false}
-                            onClicked={() => handleAction(onSelectOpenFolder)}
-                        >
-                            <Gtk.GtkBox orientation={Gtk$.Orientation.HORIZONTAL} spacing={32}>
-                                <Gtk.GtkLabel label={TEXT.common.openFolder} halign={Gtk$.Align.START} hexpand={true} />
-                                <Gtk.GtkLabel label="Ctrl+F" cssClasses={["dim-label", "caption"]} halign={Gtk$.Align.END} />
-                            </Gtk.GtkBox>
-                        </Gtk.GtkButton>
-                        {!noClearCacheSettingsAvailable && <Gtk.GtkButton
-                            cssClasses={["flat", "error"]}
-                            focusable={false}
-                            onClicked={() => handleAction(onClearCache)}
-                        >
-                            <Gtk.GtkBox halign={Gtk$.Align.START}>
-                                <Gtk.GtkLabel label={TEXT.common.clearCache} />
-                            </Gtk.GtkBox>
-                        </Gtk.GtkButton>}
-                        <Gtk.GtkButton
-                            cssClasses={["flat"]}
-                            focusable={false}
-                            onClicked={() => handleAction(onOpenSettings)}
-                        >
-                            <Gtk.GtkBox orientation={Gtk$.Orientation.HORIZONTAL} spacing={32}>
-                                <Gtk.GtkLabel label={TEXT.settings.title} halign={Gtk$.Align.START} hexpand={true} />
-                                <Gtk.GtkLabel label="Ctrl+," cssClasses={["dim-label", "caption"]} halign={Gtk$.Align.END} />
-                            </Gtk.GtkBox>
-                        </Gtk.GtkButton>
-                        <Gtk.GtkButton
-                            cssClasses={["flat"]}
-                            focusable={false}
-                            onClicked={() => handleAction(onOpenAbout)}
-                        >
-                            <Gtk.GtkBox halign={Gtk$.Align.START}>
-                                <Gtk.GtkLabel label={TEXT.about.title} />
-                            </Gtk.GtkBox>
-                        </Gtk.GtkButton>
-                    </Gtk.GtkBox>
-                </Gtk.GtkPopover>
+            menuModel={
+                <Gio.GMenu items={menuSections} />
             }
         />
     );

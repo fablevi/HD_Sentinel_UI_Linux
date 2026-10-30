@@ -148,8 +148,8 @@ export default function MainComponent({
                     />
                 </AdwToolbarView>
             }
-            content={
-                <AdwToolbarView topBar={
+        >
+            <AdwToolbarView topBar={
                     <AdwHeaderBar 
                         showTitle={isSmallWindow ? !isSidebarOpen : true}
                         start={isSmallWindow && !isSidebarOpen ? [
@@ -173,7 +173,6 @@ export default function MainComponent({
                         setSelectedDiskHistory={setSelectedDiskHistory}
                     />
                 </AdwToolbarView>
-            }
-        />
+        </AdwOverlaySplitView>
     );
 }

@@ -30,7 +30,6 @@ export default function TabulatedView({ selected_Physical_Disk_Information, sele
             >
                 <Gtk.GtkButton
                     label={TEXT.disk.tabDriveInfo}
-                    iconName="drive-harddisk-symbolic"
                     cssClasses={activeTab === "drive_info" ? ["suggested-action"] : ["flat"]}
                     onClicked={() => setActiveTab("drive_info")}
                     widthRequest={150}
@@ -38,7 +37,6 @@ export default function TabulatedView({ selected_Physical_Disk_Information, sele
 
                 <Gtk.GtkButton
                     label={TEXT.disk.tabSmart}
-                    iconName="utilities-system-monitor-symbolic"
                     cssClasses={activeTab === "smart_info" ? ["suggested-action"] : ["flat"]}
                     onClicked={() => setActiveTab("smart_info")}
                     widthRequest={150}

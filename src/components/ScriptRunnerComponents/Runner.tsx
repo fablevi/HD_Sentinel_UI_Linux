@@ -452,7 +452,6 @@ export const Runner = ({
                     <GtkBox halign={Gtk$.Align.CENTER}>
                         <GtkButton
                             label={TEXT.runner.reauthenticate}
-                            iconName="view-refresh-symbolic"
                             cssClasses={["suggested-action", "pill"]}
                             widthRequest={100}
                             onClicked={() => {
