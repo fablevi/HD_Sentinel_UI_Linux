@@ -1,11 +1,11 @@
 import { AdwOverlaySplitView, AdwToolbarView, AdwHeaderBar } from "@gtkx/jsx/adw";
 import * as Gtk from "@gtkx/jsx/gtk";
 import { HDSentinelRoot, PartitionDetails, PhysicalDiskInformation } from "../models/hdsentinel.model.js";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import ScrollSideBar from "./SideBar/ScrollSideBar.js";
 import DriveContentView from "./DriveContent/DriveContentView.js";
 import { MemoryDevice, RamInfo } from "../models/ram.model.js";
-import { localConfigStore, Measure } from "../hooks/useLocalConfig.js";
+import { localConfigStore, Measure, useLocalConfig } from "../hooks/useLocalConfig.js";
 
 type MainComponentProps = {
     hdSentinelDump: HDSentinelRoot | undefined;
@@ -44,12 +44,30 @@ export default function MainComponent({
     setSelectedDiskHistory
 }: MainComponentProps) {
 
+    // Behozzuk a beállításokat, hogy figyeljük a refreshInterval változásait
+    const { settings } = useLocalConfig();
+
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
     const [selected_Partition_Information, set_Selected_Partition_Information] = useState<PartitionDetails | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Partition_Information.Partition[0]);
     const [selected_RamInfo_by_Device, set_Selected_RamInfo_by_Device] = useState<MemoryDevice | undefined>(ramData?.devices[0]);
     const [load_Drive_Window_Type, set_Load_Drive_Window_Type] = useState<"Disk" | "Partition" | "Ram">("Disk");
 
     const isSmallWindow = currentWidth < 700;
+
+    const hdSentinelDumpRef = useRef(hdSentinelDump);
+    useEffect(() => {
+        hdSentinelDumpRef.current = hdSentinelDump;
+    }, [hdSentinelDump]);
+
+    const selectedDiskRef = useRef(selected_Physical_Disk_Information);
+    useEffect(() => {
+        selectedDiskRef.current = selected_Physical_Disk_Information;
+    }, [selected_Physical_Disk_Information]);
+
+    const setSelectedDiskHistoryRef = useRef(setSelectedDiskHistory);
+    useEffect(() => {
+        setSelectedDiskHistoryRef.current = setSelectedDiskHistory;
+    }, [setSelectedDiskHistory]);
 
     useEffect(() => {
         if (!selected_Physical_Disk_Information) return;
@@ -61,16 +79,26 @@ export default function MainComponent({
     }, [selected_Physical_Disk_Information]);
 
     useEffect(() => {
-        if (!hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information) return;
+        const intervalSettings = settings.refreshInterval;
+        let intervalMs = 1000;
 
-        const intervalSec = localConfigStore.getSettings().refreshInterval || 5;
-        const intervalMs = intervalSec * 1000;
+        if (intervalSettings === 2) {
+            intervalMs = 500;   // Quick
+        } else if (intervalSettings === 1) {
+            intervalMs = 1000;  // Medium
+        } else if (intervalSettings === 0) {
+            intervalMs = 2000;  // Slow
+        }
+        console.log("[Timer] Active refresh interval ms:", intervalMs);
 
         const timer = setInterval(() => {
+            const dump = hdSentinelDumpRef.current;
+            if (!dump?.Hard_Disk_Sentinel.Physical_Disk_Information) return;
+
             const now = new Date().toISOString();
             const currentMeasures: Measure = { ...localConfigStore.getMeasure() };
 
-            hdSentinelDump.Hard_Disk_Sentinel.Physical_Disk_Information.forEach((disk) => {
+            dump.Hard_Disk_Sentinel.Physical_Disk_Information.forEach((disk) => {
                 const serial = disk.Hard_Disk_Summary.Hard_Disk_Serial_Number;
                 if (!serial) return;
 
@@ -82,19 +110,21 @@ export default function MainComponent({
                 };
 
                 const existingEntries: DiskHistoryEntry[] = currentMeasures[serial] || [];
+                // Minden egyes mérést hozzáadunk, nincs FIFO törlés!
                 currentMeasures[serial] = [...existingEntries, entry];
             });
 
             localConfigStore.setMeasure(currentMeasures);
 
-            if (selected_Physical_Disk_Information) {
-                const activeSerial = selected_Physical_Disk_Information.Hard_Disk_Summary.Hard_Disk_Serial_Number;
-                setSelectedDiskHistory(currentMeasures[activeSerial] || []);
+            const activeDisk = selectedDiskRef.current;
+            if (activeDisk) {
+                const activeSerial = activeDisk.Hard_Disk_Summary.Hard_Disk_Serial_Number;
+                setSelectedDiskHistoryRef.current(currentMeasures[activeSerial] || []);
             }
         }, intervalMs);
 
         return () => clearInterval(timer);
-    }, [hdSentinelDump, selected_Physical_Disk_Information]);
+    }, [settings.refreshInterval]); // <--- Ha a felhasználó átállítja a beállításokban, azonnal újraindul az időzítő az új sebességgel!
 
     useEffect(() => {
         if (load_Drive_Window_Type === "Disk") {

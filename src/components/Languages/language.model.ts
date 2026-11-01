@@ -6,6 +6,12 @@ export const LANGUAGE_LABELS: Record<languageType, string> = {
 };
 
 export type uiTextType = {
+    slow: string;
+    medium: string;
+    quick: string;
+    default: string;
+    light: string;
+    dark: string;
     settings: {
         title: string;
         styleGroupTitle: string;
@@ -23,6 +29,7 @@ export type uiTextType = {
         exportSuccess: string;
         importSuccess: string;
         fileError: string;
+        general: string;
     };
     about: {
         title: string;

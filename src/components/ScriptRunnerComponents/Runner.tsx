@@ -337,6 +337,9 @@ export const Runner = ({
                         visibility={settingsDialogVisibility}
                         contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
+                        onClearCache={() => {
+                                setIsClearCacheDialogOpen(true)
+                            }}
                         onImportSuccess={() => {
                             const freshHistory = localConfigStore.getHistory();
 
@@ -379,9 +382,6 @@ export const Runner = ({
                         <SettingsMenuButton
                             onOpenSettings={() => setSettingsDialogVisibility(true)}
                             onOpenAbout={() => { setIsAboutOpen(true); }}
-                            onClearCache={() => {
-                                setIsClearCacheDialogOpen(true)
-                            }}
                             onSelectOpenFolder={() => {
                                 openCacheFolder()
                             }}
@@ -410,9 +410,6 @@ export const Runner = ({
                             <SettingsMenuButton
                                 onOpenSettings={() => setSettingsDialogVisibility(true)}
                                 onOpenAbout={() => { setIsAboutOpen(true); }}
-                                onClearCache={() => {
-                                    setIsClearCacheDialogOpen(true)
-                                }}
                                 onSelectOpenFolder={() => {
                                     openCacheFolder()
                                 }}
@@ -427,6 +424,9 @@ export const Runner = ({
                         visibility={settingsDialogVisibility}
                         contentWidth={defaultWidth}
                         onCloseFn={closeSettingsDialog}
+                        onClearCache={() => {
+                                setIsClearCacheDialogOpen(true)
+                            }}
                     />
                 )}
                 {isAboutOpen && (

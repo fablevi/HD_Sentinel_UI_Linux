@@ -1,13 +1,19 @@
 import { uiTextType } from "../language.model.js";
 
 export const en: uiTextType = {
+    slow:"Slow",
+    medium:"Medium",
+    quick:"Quick",
+    default:"Default",
+    light:"Light",
+    dark:"Dark",
     settings: {
         title: "Settings",
         styleGroupTitle: "Style",
         appSchemeStyle: "App scheme style",
         languagesGroupTitle: "Languages",
         language: "Language",
-        refreshIntervalTitle: "Refresh interval (sec)",
+        refreshIntervalTitle: "Refresh interval",
         refreshIntervalSubtitle: "Frequency of writing and reading measured data",
         cache: "Cache",
         dataManagementTitle: "Data Management",
@@ -17,7 +23,8 @@ export const en: uiTextType = {
         importHistorySubtitle: "Load previously saved JSON database",
         exportSuccess: "Data exported successfully!",
         importSuccess: "Data imported successfully!",
-        fileError: "An error occurred while handling the file!"
+        fileError: "An error occurred while handling the file!",
+        general: "General"
     },
     about: {
         title: "About",

@@ -1,13 +1,19 @@
 import { uiTextType } from "../language.model.js";
 
 export const hu: uiTextType = {
+    slow:"Lassú",
+    medium:"Közepes",
+    quick:"Gyors",
+    default:"Rendszer",
+    light:"Világos",
+    dark:"Sötét",
     settings: {
         title: "Beállítások",
         styleGroupTitle: "Stílus",
         appSchemeStyle: "Alkalmazás témája",
         languagesGroupTitle: "Nyelvek",
         language: "Nyelv",
-        refreshIntervalTitle: "Frissítési intervallum (mp)",
+        refreshIntervalTitle: "Frissítési intervallum",
         refreshIntervalSubtitle: "Adatok kiírásának és újraolvasásának sűrűsége",
         cache: "Cache",
         dataManagementTitle: "Mérési adatok kezelése",
@@ -17,7 +23,8 @@ export const hu: uiTextType = {
         importHistorySubtitle: "Korábban mentett JSON adatbázis betöltése",
         exportSuccess: "Adatok sikeresen exportálva!",
         importSuccess: "Adatok sikeresen importálva!",
-        fileError: "Hiba történt a fájl kezelése során!"
+        fileError: "Hiba történt a fájl kezelése során!",
+        general: "Általános"
     },
     about: {
         title: "Névjegy",

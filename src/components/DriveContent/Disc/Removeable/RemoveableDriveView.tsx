@@ -1,11 +1,8 @@
 import { PhysicalDiskInformation } from "../../../../models/hdsentinel.model.js";
 import * as Gtk from "@gtkx/jsx/gtk";
-import * as Gi from "@gtkx/gi/gtk";
 import * as Gtk$ from "@gtkx/gi/gtk";
 import * as Adw from "@gtkx/jsx/adw";
-import { useEffect } from "react";
 import { useTranslation } from "../../../Languages/useTranslation.js";
-import { progressBarStyleDefault } from "../../../css/ProgressBarStyle.js";
 import ActionRow from "../../Components/ActionRow.js";
 
 

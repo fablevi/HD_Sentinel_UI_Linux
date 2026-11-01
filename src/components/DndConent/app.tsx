@@ -191,12 +191,8 @@ export const App = ({ setResetApp }: AppProps) => {
                         <AdwHeaderBar
                             end={
                                 <SettingsMenuButton
-                                    noClearCacheSettingsAvailable={true}
                                     onOpenSettings={() => setSettingsDialogVisibility(true)}
                                     onOpenAbout={() => { setIsAboutOpen(true); }}
-                                    onClearCache={() => {
-                                       setIsClearCacheDialogOpen(true)
-                                    }}
                                     onSelectOpenFolder={() => {
                                         openCacheFolder()
                                     }}

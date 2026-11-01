@@ -8,15 +8,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { localConfigStore } from "../../hooks/useLocalConfig.js";
 import { LANGUAGE_LABELS, LANGUAGE_OPTIONS } from "../Languages/language.model.js";
 import { useTranslation } from "../Languages/useTranslation.js";
+import { adwButton } from "../css/ProgressBarStyle.js";
 
 type SettingsDialogType = {
     visibility: boolean;
     contentWidth: number;
     onCloseFn: () => void;
     onImportSuccess?: () => void;
+    onClearCache?: () => void;
 };
 
-export default function SettingsDialog({ visibility, contentWidth, onCloseFn, onImportSuccess }: SettingsDialogType) {
+export default function SettingsDialog({ visibility, contentWidth, onCloseFn, onImportSuccess, onClearCache }: SettingsDialogType) {
 
     const { TEXT } = useTranslation();
 
@@ -25,7 +27,7 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
     );
 
     const [refreshInterval, setRefreshInterval] = useState<string>(() =>
-        String(localConfigStore.getSettings().refreshInterval || 5)
+        String(localConfigStore.getSettings().refreshInterval)
     );
 
     const languageModel = useMemo(
@@ -33,13 +35,25 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
         []
     );
 
+    const SCHEME_OPTIONS = useMemo(() => [
+        { label: TEXT.default, value: Adw$.ColorScheme.DEFAULT },     // Index 0 -> Default
+        { label: TEXT.light, value: Adw$.ColorScheme.FORCE_LIGHT }, // Index 1 -> Force Light
+        { label: TEXT.dark, value: Adw$.ColorScheme.FORCE_DARK }   // Index 2 -> Force Dark
+    ], [TEXT]);
+
     const schemeModel = useMemo(() => {
-        return Gtk$.StringList.new(
-            Object.keys(Adw$.ColorScheme).filter(
-                (key) => isNaN(Number(key))
-            )
-        );
-    }, []);
+        return Gtk$.StringList.new(SCHEME_OPTIONS.map(opt => opt.label));
+    }, [SCHEME_OPTIONS]);
+
+    const getSchemeIndex = (scheme: Adw$.ColorScheme) => {
+        const found = SCHEME_OPTIONS.findIndex(opt => opt.value === scheme);
+        return found !== -1 ? found : 0;
+    };
+
+    const intervalModel = useMemo(
+        () => Gtk$.StringList.new([TEXT.slow, TEXT.medium, TEXT.quick]),
+        [TEXT]
+    );
 
     useEffect(() => {
         const styleManager = Adw$.StyleManager.getDefault();
@@ -53,16 +67,13 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
         };
     }, []);
 
-    const handleIntervalChange = (text: string) => {
-        setRefreshInterval(text);
-        const parsed = parseInt(text, 10);
+    const handleIntervalChange = (value: number | null) => {
+        setRefreshInterval(value?.toString() || "0");
 
-        if (!isNaN(parsed) && parsed > 0) {
-            localConfigStore.setSettings({
-                ...localConfigStore.settings,
-                refreshInterval: parsed
-            });
-        }
+        localConfigStore.setSettings({
+            ...localConfigStore.settings,
+            refreshInterval: value || 0
+        });
     };
 
     const handleExport = async () => {
@@ -171,23 +182,6 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                             title={TEXT.settings.styleGroupTitle}
                         >
                             <Adw.AdwComboRow
-                                title={TEXT.settings.appSchemeStyle}
-                                model={schemeModel}
-                                selected={appScheme}
-                                onNotifySelected={(value) => {
-                                    Adw$.StyleManager.getDefault().setColorScheme(value || 0);
-                                    localConfigStore.setSettings({ ...localConfigStore.settings, scheme: value || 0 });
-                                }}
-                            />
-                        </Adw.AdwPreferencesGroup>
-
-                        <Adw.AdwPreferencesGroup
-                            marginStart={20}
-                            marginEnd={20}
-                            marginTop={20}
-                            title={TEXT.settings.languagesGroupTitle}
-                        >
-                            <Adw.AdwComboRow
                                 title={TEXT.settings.language}
                                 model={languageModel}
                                 selected={LANGUAGE_OPTIONS.indexOf(localConfigStore.getSettings().language || "en")}
@@ -199,6 +193,18 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                                     });
                                 }}
                             />
+                            <Adw.AdwComboRow
+                                title={TEXT.settings.appSchemeStyle}
+                                model={schemeModel}
+                                selected={getSchemeIndex(appScheme)}
+                                onNotifySelected={(selectedIndex) => {
+                                    const index = selectedIndex ?? 0;
+                                    const targetScheme = SCHEME_OPTIONS[index].value;
+
+                                    Adw$.StyleManager.getDefault().setColorScheme(targetScheme);
+                                    localConfigStore.setSettings({ ...localConfigStore.settings, scheme: targetScheme });
+                                }}
+                            />
                         </Adw.AdwPreferencesGroup>
 
                         <Adw.AdwPreferencesGroup
@@ -207,7 +213,61 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                             marginTop={20}
                             title={TEXT.settings.cache}
                         >
-                            <Adw.AdwActionRow>
+                            <Adw.AdwComboRow
+                                title={TEXT.settings.refreshIntervalTitle}
+                                subtitle={TEXT.settings.refreshIntervalSubtitle}
+                                model={intervalModel}
+                                selected={parseInt(refreshInterval)}
+                                onNotifySelected={handleIntervalChange}
+                            />
+                            {onClearCache &&
+                                <Gtk.GtkButton
+                                    marginTop={10}
+                                    onClicked={onClearCache}
+                                    cssClasses={["error", adwButton]}
+                                    label={TEXT.common.clearCache}
+
+                                />}
+                        </Adw.AdwPreferencesGroup>
+                        <Adw.AdwPreferencesGroup
+                            marginStart={20}
+                            marginEnd={20}
+                            marginTop={20}
+                            title={TEXT.settings.dataManagementTitle}
+                        >
+                            <Gtk.GtkBox
+                                orientation={Gtk$.Orientation.HORIZONTAL}
+                                spacing={10}
+                                hexpand={true}
+                                marginStart={0}
+                                marginEnd={0}
+                                marginBottom={12}
+                            >
+                                <Gtk.GtkButton
+                                    label="Export"
+                                    cssClasses={[ adwButton]}
+                                    valign={Gtk$.Align.CENTER}
+                                    hexpand={true}
+                                    onClicked={handleExport}
+                                />
+                                <Gtk.GtkButton
+                                    label="Import"
+                                    cssClasses={[ adwButton]}
+                                    valign={Gtk$.Align.CENTER}
+                                    hexpand={true}
+                                    onClicked={handleImport}
+                                />
+                            </Gtk.GtkBox>
+                        </Adw.AdwPreferencesGroup>
+                    </Gtk.GtkBox>
+                </Gtk.GtkScrolledWindow>
+            </Adw.AdwToolbarView>
+        </Adw.AdwDialog>
+    );
+}
+
+/*
+  <Adw.AdwActionRow>
                                 <Gtk.GtkCenterBox
                                     orientation={Gtk$.Orientation.HORIZONTAL}
                                     startWidget={
@@ -217,18 +277,43 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
                                         />
                                     }
                                     endWidget={
-                                        <Gtk.GtkEntry
+                                        <Gtk.GtkBox
+                                            orientation={Gtk$.Orientation.HORIZONTAL}
+                                            //valign={Gtk$.AlignCenter}
+                                            cssClasses={["linked"]}
+                                        >
+                                            <Gtk.GtkToggleButton
+                                                label="0"
+                                                active={refreshInterval === "0"}
+                                                onToggled={(self) => {
+                                                    if (self.getActive()) handleIntervalChange("0");
+                                                }}
+                                            />
+                                            <Gtk.GtkToggleButton
+                                                label="1"
+                                                active={refreshInterval === "1"}
+                                                onToggled={(self) => {
+                                                    if (self.getActive()) handleIntervalChange("1");
+                                                }}
+                                            />
+                                            <Gtk.GtkToggleButton
+                                                label="2"
+                                                active={refreshInterval === "2"}
+                                                onToggled={(self) => {
+                                                    if (self.getActive()) handleIntervalChange("2");
+                                                }}
+                                            />
+                                        </Gtk.GtkBox>
+                                    }
+                                />
+                            </Adw.AdwActionRow>
+<Gtk.GtkEntry
                                             text={refreshInterval}
                                             maxWidthChars={5}
                                             widthRequest={100}
                                             onChanged={(self) => handleIntervalChange(self.getText())}
                                         />
-                                    }
-                                />
-                            </Adw.AdwActionRow>
-                        </Adw.AdwPreferencesGroup>
-
-                        <Adw.AdwPreferencesGroup>
+ <Adw.AdwPreferencesGroup>
                             <Adw.AdwActionRow
                             marginStart={20}
                             marginEnd={20}
@@ -238,38 +323,4 @@ export default function SettingsDialog({ visibility, contentWidth, onCloseFn, on
 
                             </Adw.AdwActionRow>
                         </Adw.AdwPreferencesGroup>
-
-                        <Adw.AdwPreferencesGroup
-                            marginStart={20}
-                            marginEnd={20}
-                            marginTop={20}
-                            title={TEXT.settings.dataManagementTitle}
-                        >
-                            <Adw.AdwActionRow
-                                title={TEXT.settings.exportHistory}
-                                subtitle={TEXT.settings.exportHistorySubtitle}
-                            >
-                                <Gtk.GtkButton
-                                    label="Export"
-                                    valign={Gtk$.Align.CENTER}
-                                    onClicked={handleExport}
-                                />
-                            </Adw.AdwActionRow>
-
-                            <Adw.AdwActionRow
-                                title={TEXT.settings.importHistory}
-                                subtitle={TEXT.settings.importHistorySubtitle}
-                            >
-                                <Gtk.GtkButton
-                                    label="Import"
-                                    valign={Gtk$.Align.CENTER}
-                                    onClicked={handleImport}
-                                />
-                            </Adw.AdwActionRow>
-                        </Adw.AdwPreferencesGroup>
-                    </Gtk.GtkBox>
-                </Gtk.GtkScrolledWindow>
-            </Adw.AdwToolbarView>
-        </Adw.AdwDialog>
-    );
-}
+*/

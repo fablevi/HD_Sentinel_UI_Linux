@@ -12,3 +12,8 @@ export const progressBarStyleDefault = css`
         border-radius: 6px;
     }
 `;
+
+export const adwButton = css`
+padding-top: 10px;
+padding-bottom: 10px;
+`
