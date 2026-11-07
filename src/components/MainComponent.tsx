@@ -44,7 +44,7 @@ export default function MainComponent({
     setSelectedDiskHistory
 }: MainComponentProps) {
 
-    // Behozzuk a beállításokat, hogy figyeljük a refreshInterval változásait
+    // Load the settings so we can watch for refreshInterval changes
     const { settings } = useLocalConfig();
 
     const [selected_Physical_Disk_Information, set_Selected_Physical_Disk_Information] = useState<PhysicalDiskInformation | undefined>(hdSentinelDump?.Hard_Disk_Sentinel.Physical_Disk_Information[0]);
@@ -110,7 +110,7 @@ export default function MainComponent({
                 };
 
                 const existingEntries: DiskHistoryEntry[] = currentMeasures[serial] || [];
-                // Minden egyes mérést hozzáadunk, nincs FIFO törlés!
+                // Every measurement is added, there is no FIFO removal!
                 currentMeasures[serial] = [...existingEntries, entry];
             });
 
@@ -124,7 +124,7 @@ export default function MainComponent({
         }, intervalMs);
 
         return () => clearInterval(timer);
-    }, [settings.refreshInterval]); // <--- Ha a felhasználó átállítja a beállításokban, azonnal újraindul az időzítő az új sebességgel!
+    }, [settings.refreshInterval]); // <--- If the user changes it in the settings, the timer restarts immediately with the new speed!
 
     useEffect(() => {
         if (load_Drive_Window_Type === "Disk") {

@@ -13,6 +13,6 @@ export function openCacheFolder(subDir: string = ""): void {
 
         exec(`xdg-open "${targetDir}"`);
     } catch (err) {
-        console.error("[GTKX] Hiba a mappa megnyitásakor:", err);
+        console.error("[GTKX] Error while opening the folder:", err);
     }
 }

@@ -8,11 +8,11 @@ export function clearCacheFolder(): boolean {
 
         if (fs.existsSync(targetDir)) {
             fs.rmSync(targetDir, { recursive: true, force: true });
-            console.log("[GTKX] Cache sikeresen törölve:", targetDir);
+            console.log("[GTKX] Cache successfully cleared:", targetDir);
         }
         return true;
     } catch (err) {
-        console.error("[GTKX] Hiba a cache törlésekor:", err);
+        console.error("[GTKX] Error while clearing the cache:", err);
         return false;
     }
 }

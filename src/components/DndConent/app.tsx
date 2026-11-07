@@ -136,7 +136,7 @@ export const App = ({ setResetApp }: AppProps) => {
             }
 
             if (!filePath) {
-                console.warn("X Nem sikerült kibontani a fájl elérési útját!");
+                console.warn("X Failed to extract the file path!");
                 setDropError(TEXT.notFound.invalidFile);
                 return false;
             }
@@ -144,7 +144,7 @@ export const App = ({ setResetApp }: AppProps) => {
             const fileName = path.basename(filePath);
 
             if (fileName !== "HDSentinel") {
-                console.warn(`X Hibás fájlnév! Várt: "HDSentinel", kapott: "${fileName}"`);
+                console.warn(`X Invalid file name! Expected: "HDSentinel", got: "${fileName}"`);
                 setDropError(TEXT.notFound.wrongFileName);
                 return false;
             }
@@ -159,7 +159,7 @@ export const App = ({ setResetApp }: AppProps) => {
             _reloadHDSentinelSearch();
             return true;
         } catch (err) {
-            console.error("X Hiba a fájl feldolgozásakor:", err);
+            console.error("X Error while processing the file:", err);
             setDropError(TEXT.notFound.copyFailed);
             return false;
         }

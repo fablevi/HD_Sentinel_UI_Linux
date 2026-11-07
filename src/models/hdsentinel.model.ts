@@ -89,7 +89,7 @@ export interface DiskProperties {
     Number_of_Namespaces?: number | string;
     Stripe_Size?: number | string;
     Maximum_Power_mW?: number | string;
-    // USB / SCSI specifikus tulajdonságok
+    // USB / SCSI specific properties
     Vendor_Information?: string;
     Status?: string;
     Version?: number | string;
@@ -103,7 +103,7 @@ export interface DiskProperties {
 
 export interface SCSIInformation {
     Removable?: string;
-    // Az XML-ben duplázva szerepel a Failure_Prediction tag, így tömbként vagy stringként is érkezhet
+    // The Failure_Prediction tag appears duplicated in the XML, so it can arrive as an array or as a string
     Failure_Prediction?: string | string[];
 }
 

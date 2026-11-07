@@ -272,7 +272,7 @@ export default function NotRemoveableDriveView({
                 />
             </Adw.AdwPreferencesGroup>
 
-            {/* 1. Kondíció & Teljesítmény grafikon */}
+            {/* 1. Condition & Performance graph */}
             <Gtk.GtkLabel 
                 label={TEXT.disk.statusHistoryTitle} 
                 cssClasses={["subtitle", "dim-label"]}
@@ -291,7 +291,7 @@ export default function NotRemoveableDriveView({
                 </Adw.AdwActionRow>
             </Adw.AdwPreferencesGroup>
 
-            {/* 2. Hőmérséklet grafikon */}
+            {/* 2. Temperature graph */}
             <Gtk.GtkLabel 
                 label={TEXT.disk.tempHistoryTitle} 
                 cssClasses={["subtitle", "dim-label"]}
@@ -310,7 +310,7 @@ export default function NotRemoveableDriveView({
                 </Adw.AdwActionRow>
             </Adw.AdwPreferencesGroup>
 
-            {/* Mérési adatok táblázata */}
+            {/* Measurement data table */}
             <Gtk.GtkLabel 
                 label={TEXT.disk.dataTableTitle} 
                 cssClasses={["subtitle", "dim-label"]}
