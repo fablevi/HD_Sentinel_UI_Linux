@@ -38,7 +38,8 @@ export const hu: uiTextType = {
         openFolder: "Adatmappa megnyitása",
         clearCache: "Cache törlése",
         confirm: "Megerősítés",
-        delete: "Törlés"
+        delete: "Törlés",
+        toggleSidePanel: "Oldalpanel átkapcsolása"
     },
     clearCacheDialog: {
         title: "Cache törlése?",

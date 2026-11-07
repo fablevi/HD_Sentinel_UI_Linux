@@ -385,6 +385,7 @@ export const Runner = ({
                             onSelectOpenFolder={() => {
                                 openCacheFolder()
                             }}
+                            onToggleSidebar={() => setIsSidebarOpen(open => !open)}
                             adwWindow={adwWindowOpen}
                         />
                     }

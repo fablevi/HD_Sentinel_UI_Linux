@@ -38,7 +38,8 @@ export const en: uiTextType = {
         openFolder: "Open Data Folder",
         clearCache: "Clear Cache",
         confirm: "Confirm",
-        delete: "Delete"
+        delete: "Delete",
+        toggleSidePanel: "Toggle Side Panel"
     },
     clearCacheDialog: {
         title: "Clear Cache?",

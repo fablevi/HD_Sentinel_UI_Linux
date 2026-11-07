@@ -1,6 +1,6 @@
 {
   "name": "hdsentinel",
-  "version": "2026.11.01",
+  "version": "2026.11.07",
   "private": true,
   "type": "module",
   "imports": {

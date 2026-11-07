@@ -44,6 +44,7 @@ export type uiTextType = {
         clearCache: string;
         confirm: string;
         delete: string;
+        toggleSidePanel: string;
     };
     clearCacheDialog: {
         title: string;

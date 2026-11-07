@@ -39,6 +39,29 @@ chmod +x HDSentinelUI-x86_64.AppImage
 3. The file is copied to `~/.cache/hdsentinel/exec/HDSentinel` and marked executable.
 4. Monitoring runs with elevated privileges - enter your password when the `pkexec` prompt appears.
 
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl+P` | Toggle the side panel (drive / partition / RAM list; effective when the window is narrow, < 700 px) |
+| `Ctrl+F` | Open the data folder (`~/.cache/hdsentinel/`) in the file manager |
+| `Ctrl+comma` (`,`) | Open the Settings dialog |
+
+The side panel can also be opened/closed with the arrow buttons in the header bar or with a swipe gesture on narrow windows.
+
+## Settings
+
+Open the Settings dialog with `Ctrl+comma` or via the main menu button. All settings persist in `~/.cache/hdsentinel/config/settings.json`.
+
+| Setting | Options | Default | Notes |
+| --- | --- | --- | --- |
+| Language | English, Magyar | English | Switches all UI labels at once |
+| App scheme style | System (Default), Light, Dark | System (follows GTK theme) | Follows GTK color-scheme notifications automatically |
+| Refresh interval | Slow (2 s), Medium (1 s), Quick (0.5 s) | Medium (1 s) | Frequency of `HDSentinel -xml -dump` reads and measurement writes; changes take effect immediately |
+| Clear Cache | - | - | Deletes cached files and the downloaded `HDSentinel` binary (confirmation dialog) |
+| Export History | - | - | Saves the measurement database to a JSON file |
+| Import History | - | - | Loads a previously saved JSON measurement database |
+
 ## Requirements
 
 - x86_64 Linux distribution
@@ -53,9 +76,23 @@ Settings are stored as JSON:
 
 | File | Purpose |
 | --- | --- |
-| `~/.cache/hdsentinel/config/settings.json` | Color scheme and language |
-| `~/.cache/hdsentinel/config/measure.json` | Measurement data cache |
+| `~/.cache/hdsentinel/config/settings.json` | Color scheme, language, refresh interval |
+| `~/.cache/hdsentinel/config/measure.json` | Measurement data cache (per-disk temperature / health / performance history) |
 | `~/.cache/hdsentinel/exec/HDSentinel` | Your copy of the HDSentinel binary |
+
+`settings.json` structure (default values shown):
+
+```json
+{
+  "scheme": 0,
+  "language": "en",
+  "refreshInterval": 1
+}
+```
+
+- `scheme`: `0` = System (Default), `1` = Light, `2` = Dark
+- `language`: `"en"` or `"hu"`
+- `refreshInterval`: `0` = Slow (2000 ms), `1` = Medium (1000 ms), `2` = Quick (500 ms)
 
 ## Development
 

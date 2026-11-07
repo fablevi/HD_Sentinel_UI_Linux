@@ -12,6 +12,7 @@ type SettingsMenuButtonProps = {
     onOpenAbout?: () => void;
     onSelectOpenFolder?: () => void;
     onClearCache?: () => void;
+    onToggleSidebar?: () => void;
     adwWindow: RefObject<Adw$.ApplicationWindow | null>;
 };
 
@@ -19,6 +20,7 @@ export default function SettingsMenuButton({
     onOpenSettings,
     onOpenAbout,
     onSelectOpenFolder,
+    onToggleSidebar,
     adwWindow
 }: SettingsMenuButtonProps) {
     const { TEXT } = useTranslation();
@@ -41,6 +43,14 @@ export default function SettingsMenuButton({
         menuSections.push({ section: primarySection });
     }
 
+    const sidePanelSection: any[] = [];
+    if (onToggleSidebar) {
+        sidePanelSection.push({ label: TEXT.common.toggleSidePanel, action: "app.toggle-sidebar" });
+    }
+    if (sidePanelSection.length > 0) {
+        menuSections.push({ section: sidePanelSection });
+    }
+
     return (
         <Gtk.GtkMenuButton
             primary
@@ -55,6 +65,8 @@ export default function SettingsMenuButton({
                     if (!callback) return;
                     try {
                         const actionName = `app.${name}`;
+                        if (app.hasAction(actionName)) return;
+
                         const action = new Gio$.SimpleAction({ name });
                         action.on("activate", () => callback());
                         app.addAction(action);
@@ -70,6 +82,7 @@ export default function SettingsMenuButton({
                 registerAppAction("open-folder", onSelectOpenFolder, "<Control>f");
                 registerAppAction("open-settings", onOpenSettings, "<Control>comma");
                 registerAppAction("open-about", onOpenAbout);
+                registerAppAction("toggle-sidebar", onToggleSidebar, "<Control>p");
             }}
             menuModel={
                 <Gio.GMenu items={menuSections} />
